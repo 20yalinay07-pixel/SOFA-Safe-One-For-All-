@@ -56,8 +56,7 @@ SOFA-Safe-One-For-All-/
 │   └── index.html                 # splash screen + sidebar app shell
 ├── SOFA.ico                         # app/shortcut icon
 ├── installer/
-│   └── SOFA_Setup.nsi               # NSIS source for the Windows SOFA-Setup.exe installer
-├── setup.bat                       # Windows one-time installer script + desktop shortcut creator
+│   └── SOFA_Setup.nsi               # NSIS source for the Windows SOFA-Setup.exe installer (the installer)
 ├── start_sofa.bat                 # Windows launcher (visible console, for debugging)
 ├── sofa_silent.bat                 # Windows launcher used by SOFA.vbs (no console)
 ├── SOFA.vbs                        # double-click this (or a shortcut to it) to launch silently
@@ -97,11 +96,10 @@ SOFA-Safe-One-For-All-/
 
    **On Windows**, use **`SOFA-Setup.exe`** instead (download it from the
    [Releases](../../releases) page, or build it yourself — see below) —
-   a real installer wizard that sets up the venv, installs dependencies,
-   creates `.env`, best-effort installs OmniRoute if `npm` is available,
-   and adds a **"SOFA AI"** Desktop + Start Menu shortcut with the SOFA
-   icon. If you'd rather not run an installer, `setup.bat` does the same
-   thing as a plain script instead of a wizard.
+   the official installer: a real wizard that sets up the venv, installs
+   dependencies, creates `.env`, best-effort installs OmniRoute if `npm`
+   is available, and adds a **"SOFA AI"** Desktop + Start Menu shortcut
+   with the SOFA icon.
 
    **Uninstalling**: the installer also drops an `Uninstall.exe` inside
    the install folder, so if you decide you don't want it, you can remove
@@ -135,7 +133,8 @@ for privacy and security reasons. **A fresh install has nothing to talk to
 until you do this once:**
 
 1. Install and run **OmniRoute** or **FreeLLMAPI** (step 1 above) — this is
-   a separate local app/process, not something `setup.bat` installs for you.
+   a separate local app/process; `SOFA-Setup.exe` only auto-installs
+   OmniRoute for you if `npm` is already on your system.
 2. On that gateway's own dashboard, connect at least one free provider key
    for **chat** (e.g. Groq, Gemini) and, if you want Image Creation to work,
    one that does image generation (e.g. Stability). None of this happens
