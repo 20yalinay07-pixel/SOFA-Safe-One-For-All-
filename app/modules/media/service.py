@@ -19,7 +19,7 @@ import httpx
 from PIL import Image, ImageFilter
 
 from app.config import get_settings
-from app.utils.gateway import get_gateway_config, is_gateway_usable, parse_provider_order
+from app.utils.gateway import error_body_snippet, get_gateway_config, is_gateway_usable, parse_provider_order
 from app.utils.logger import get_logger, safe_log_event
 
 logger = get_logger(__name__)
@@ -73,7 +73,8 @@ async def generate_image(prompt: str, negative_prompt: str | None, width: int, h
             safe_log_event(logger, "image_generate_success", {"provider": provider})
             return image_bytes
         except httpx.HTTPStatusError as exc:
-            errors.append(f"{provider}: HTTP {exc.response.status_code}")
+            snippet = error_body_snippet(exc.response)
+            errors.append(f"{provider}: HTTP {exc.response.status_code}" + (f" - {snippet}" if snippet else ""))
             safe_log_event(logger, "image_generate_http_error", {"provider": provider, "status": exc.response.status_code})
         except httpx.RequestError:
             errors.append(f"{provider}: ağa ulaşılamadı")

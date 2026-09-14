@@ -44,6 +44,16 @@ function appendMessage(role, text) {
   el.textContent = text;
   chatWindow.appendChild(el);
   chatWindow.scrollTop = chatWindow.scrollHeight;
+  return el;
+}
+
+function showTypingIndicator() {
+  const el = document.createElement("div");
+  el.className = "chat-msg assistant typing-indicator";
+  el.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+  chatWindow.appendChild(el);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+  return el;
 }
 
 chatForm.addEventListener("submit", async (event) => {
@@ -56,6 +66,8 @@ chatForm.addEventListener("submit", async (event) => {
   chatHistory.push({ role: "user", content: text });
   chatInput.value = "";
   chatInput.disabled = true;
+
+  const typingEl = showTypingIndicator();
 
   try {
     const response = await fetch("/api/chat", {
@@ -70,9 +82,11 @@ chatForm.addEventListener("submit", async (event) => {
     }
 
     const data = await response.json();
+    typingEl.remove();
     appendMessage("assistant", data.reply);
     chatHistory.push({ role: "assistant", content: data.reply });
   } catch (err) {
+    typingEl.remove();
     chatError.textContent = `Hata: ${err.message}`;
     chatError.hidden = false;
     appendMessage("system", "Yanıt alınamadı, lütfen tekrar deneyin.");
