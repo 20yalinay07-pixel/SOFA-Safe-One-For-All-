@@ -1,24 +1,19 @@
 """
 Chat & Assistant Module - Servis Katmanı
 
-SOFA, ücretsiz LLM'lere tek tek sağlayıcı hesabı/anahtarı aramak yerine,
-yerelde çalışan OpenAI-uyumlu bir "ağ geçidi" (gateway) üzerinden erişir:
+SOFA, sohbet isteklerini birden fazla ücretsiz ağ geçidi arasında sırayla
+dener (fallback zinciri): CHAT_PROVIDER_ORDER'daki ilk sağlayıcı başarısız
+olursa (ağ hatası, HTTP hatası veya eksik anahtar), otomatik olarak bir
+sonrakine geçer. Kullanıcı hiçbir şey fark etmez; yalnızca zincirdeki
+HERKES başarısız olursa hata görür.
 
-  - OmniRoute  (https://github.com/diegosouzapw/OmniRoute)
-    Kurulum: `npm install -g omniroute`
-    Varsayılan uç: http://localhost:20128/v1  (zero-config, anahtar gerekmez)
-
-  - FreeLLMAPI (https://github.com/tashfeenahmed/freellmapi)
-    Kurulum: `curl -fsSL https://freellmapi.co/install.sh | bash`
-    Varsayılan uç: http://localhost:3001/v1  (birleşik anahtar gerekir)
-
-Her iki sağlayıcı da OpenAI'nin `/chat/completions` formatını kullandığı
-için tek bir generic istemci yeterlidir; hangisinin kullanılacağı
-.env dosyasındaki CHAT_PROVIDER ile seçilir.
+Varsayılan sıra: FreeLLMAPI (ör. Groq - hızlı/güvenilir) önce, OmniRoute
+yedek olarak sonra; `.env`'deki CHAT_PROVIDER_ORDER ile değiştirilebilir.
 """
 import httpx
 
 from app.config import get_settings
+from app.utils.gateway import get_gateway_config, is_gateway_usable, parse_provider_order
 from app.utils.logger import get_logger, safe_log_event
 
 logger = get_logger(__name__)
@@ -26,22 +21,6 @@ logger = get_logger(__name__)
 
 class ChatServiceError(Exception):
     """Chat servisiyle ilgili kullanıcıya gösterilebilir (bilinen) hatalar için."""
-
-
-def _resolve_provider_config(provider: str) -> tuple[str, str]:
-    """Seçili sağlayıcı için (base_url, api_key) döndürür."""
-    settings = get_settings()
-
-    if provider == "freellmapi":
-        if not settings.freellmapi_api_key:
-            raise ChatServiceError(
-                "FREELLMAPI_API_KEY .env dosyasında tanımlı değil. "
-                "FreeLLMAPI kurulum sonrası panelden aldığınız birleşik anahtarı girin."
-            )
-        return settings.freellmapi_base_url, settings.freellmapi_api_key
-
-    # Varsayılan / "omniroute": zero-config, anahtar zorunlu değil.
-    return settings.omniroute_base_url, settings.omniroute_api_key
 
 
 async def _call_gateway(base_url: str, api_key: str, model: str, messages: list[dict], temperature: float) -> str:
@@ -64,34 +43,32 @@ async def generate_reply(
     messages: list[dict], model: str | None = None, temperature: float = 0.7
 ) -> tuple[str, str, str]:
     """
-    Sohbet yanıtı üretir. Sağlayıcı .env'deki CHAT_PROVIDER'a göre seçilir.
+    Sohbet yanıtı üretir; CHAT_PROVIDER_ORDER'daki sağlayıcıları sırayla dener.
     Dönüş: (yanit_metni, kullanilan_saglayici, kullanilan_model)
     """
     settings = get_settings()
-    provider = settings.chat_provider.lower()
     chosen_model = model or settings.chat_model
+    order = parse_provider_order(settings.chat_provider_order)
 
-    try:
-        base_url, api_key = _resolve_provider_config(provider)
-        reply = await _call_gateway(base_url, api_key, chosen_model, messages, temperature)
-        safe_log_event(logger, "chat_reply_success", {"provider": provider})
-        return reply, provider, chosen_model
+    errors: list[str] = []
+    for provider in order:
+        gateway = get_gateway_config(provider)
+        if not is_gateway_usable(gateway):
+            errors.append(f"{provider}: anahtar tanımlı değil, atlandı")
+            continue
 
-    except ChatServiceError:
-        raise
-    except httpx.HTTPStatusError as exc:
-        safe_log_event(logger, "chat_http_error", {"status": exc.response.status_code})
-        raise ChatServiceError(
-            f"{provider} ağ geçidi hata döndürdü (HTTP {exc.response.status_code}). "
-            f"{provider.capitalize()} servisinin çalıştığından ve gerekiyorsa "
-            "anahtarın doğru girildiğinden emin olun."
-        ) from exc
-    except httpx.RequestError as exc:
-        safe_log_event(logger, "chat_network_error", {})
-        raise ChatServiceError(
-            f"{provider} servisine ulaşılamadı. Yerel ağ geçidinin çalıştığından emin olun "
-            f"(OmniRoute: `omniroute`, FreeLLMAPI: kurulum betiğiyle başlatılan servis)."
-        ) from exc
-    except (KeyError, IndexError) as exc:
-        safe_log_event(logger, "chat_parse_error", {})
-        raise ChatServiceError("Sağlayıcıdan beklenmeyen bir yanıt formatı geldi.") from exc
+        try:
+            reply = await _call_gateway(gateway.base_url, gateway.api_key, chosen_model, messages, temperature)
+            safe_log_event(logger, "chat_reply_success", {"provider": provider})
+            return reply, provider, chosen_model
+        except httpx.HTTPStatusError as exc:
+            errors.append(f"{provider}: HTTP {exc.response.status_code}")
+            safe_log_event(logger, "chat_http_error", {"provider": provider, "status": exc.response.status_code})
+        except httpx.RequestError:
+            errors.append(f"{provider}: ağa ulaşılamadı")
+            safe_log_event(logger, "chat_network_error", {"provider": provider})
+        except (KeyError, IndexError):
+            errors.append(f"{provider}: beklenmeyen yanıt formatı")
+            safe_log_event(logger, "chat_parse_error", {"provider": provider})
+
+    raise ChatServiceError("Tüm sohbet sağlayıcıları başarısız oldu: " + "; ".join(errors))

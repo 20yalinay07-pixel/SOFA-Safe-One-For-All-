@@ -13,7 +13,9 @@ SOFA doesn't require you to sign up for and manage separate API keys for every f
 - **[OmniRoute](https://github.com/diegosouzapw/OmniRoute)** — zero-config, gives access to 290+ providers with no key required after install. Default endpoint: `http://localhost:20128/v1`
 - **[FreeLLMAPI](https://github.com/tashfeenahmed/freellmapi)** — combines 34+ free LLM providers behind a single `/v1` endpoint. Default endpoint: `http://localhost:3001/v1`
 
-Which one is used is selected via `CHAT_PROVIDER` (`omniroute` or `freellmapi`) in the `.env` file; since both services use OpenAI's `/chat/completions` and `/images/generations` format, SOFA's backend can talk to either one through a single generic client.
+Since both services use OpenAI's `/chat/completions`, `/images/generations` and `/audio/speech` format, SOFA's backend can talk to either one through a single generic client — and it goes further: each module (Chat, Image Creation, Music Creator) tries an **ordered fallback chain** of providers. If the first one fails (network error, HTTP error, missing key), it automatically retries the next one — no user-visible interruption. The order is configurable per module via `CHAT_PROVIDER_ORDER`, `MEDIA_PROVIDER_ORDER`, and `MUSIC_PROVIDER_ORDER` in `.env` (comma-separated, e.g. `freellmapi,omniroute`).
+
+Music Creator additionally supports **[SunoAPI.org](https://sunoapi.org)** as a first-class provider for real music generation (set `SUNOAPI_API_KEY`) — when configured, it's tried before falling back to the TTS-based placeholder on the gateway chain.
 
 ## Folder Structure
 
@@ -27,19 +29,20 @@ SOFA-Safe-One-For-All-/
 │   ├── main.py                  # FastAPI entry point
 │   ├── config.py                # centralized .env-based settings
 │   ├── utils/
-│   │   └── logger.py            # privacy-first logger
+│   │   ├── logger.py            # privacy-first logger
+│   │   └── gateway.py           # shared fallback-chain resolution (OmniRoute/FreeLLMAPI)
 │   └── modules/
 │       ├── chat/                # Chat & Assistant module
 │       │   ├── schemas.py
-│       │   ├── service.py       # OmniRoute / FreeLLMAPI client
+│       │   ├── service.py       # fallback chain across gateways
 │       │   └── router.py
 │       ├── media/                # Media generation & processing module
 │       │   ├── schemas.py
-│       │   ├── service.py       # image generation + watermark removal template
+│       │   ├── service.py       # image generation (fallback chain) + watermark removal template
 │       │   └── router.py
-│       ├── music/                # Music Creator module (draft/template)
+│       ├── music/                # Music Creator module
 │       │   ├── schemas.py
-│       │   ├── service.py       # TTS-based placeholder for real music generation
+│       │   ├── service.py       # SunoAPI.org (real music) + TTS fallback chain
 │       │   └── router.py
 │       └── privacy/              # Secure local tools module
 │           ├── schemas.py
@@ -80,7 +83,7 @@ SOFA-Safe-One-For-All-/
 3. **Configure environment variables:**
    ```bash
    cp .env.example .env
-   # Edit CHAT_PROVIDER, base URLs and keys if needed.
+   # Edit the *_PROVIDER_ORDER fallback chains, base URLs and keys if needed.
    ```
 
 4. **Run the app:**
