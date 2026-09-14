@@ -208,6 +208,10 @@ musicGenerateBtn.addEventListener("click", async () => {
 
     const data = await response.json();
     musicResult.innerHTML = "";
+    const note = document.createElement("p");
+    note.className = "panel-hint";
+    note.textContent = data.message;
+    musicResult.appendChild(note);
     const audio = document.createElement("audio");
     audio.controls = true;
     audio.src = `data:audio/mpeg;base64,${data.audio_base64}`;

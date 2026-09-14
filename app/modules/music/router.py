@@ -11,13 +11,25 @@ router = APIRouter(prefix="/api/music", tags=["music"])
 async def generate_music_endpoint(payload: MusicGenerateRequest) -> MusicGenerateResponse:
     """Metinden ses/müzik taslağı üretir (TTS tabanlı yer tutucu)."""
     try:
-        audio_bytes = await generate_music(payload.prompt)
+        audio_bytes, source, sunoapi_failure_reason = await generate_music(payload.prompt)
+
+        if source == "sunoapi":
+            message = "Gerçek müzik üretildi (SunoAPI.org)."
+        elif sunoapi_failure_reason:
+            message = (
+                "Bu bir şarkı DEĞİL — SunoAPI.org başarısız olduğu için "
+                f"metinden-sese (TTS) taslağına düşüldü. Sebep: {sunoapi_failure_reason}"
+            )
+        else:
+            message = (
+                "Bu bir şarkı DEĞİL — SunoAPI.org anahtarı tanımlı değil, "
+                "metinden-sese (TTS) taslağı üretildi. Gerçek müzik için "
+                ".env'e SUNOAPI_API_KEY ekleyin."
+            )
+
         return MusicGenerateResponse(
             status="success",
-            message=(
-                "Ses üretildi (taslak mod, TTS tabanlı). Gerçek müzik modeli "
-                "entegrasyonu için service.py'deki TODO'ya bakın."
-            ),
+            message=message,
             audio_base64=bytes_to_base64(audio_bytes),
         )
     except MusicServiceError as exc:
