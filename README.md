@@ -4,7 +4,7 @@ Local AI chatbox for everything, you need to create image, create music, chat or
 
 ## What is it?
 
-SOFA is a fully local-first, privacy-focused, multi-purpose AI assistant application. It brings together tools like chat, image generation, and watermark removal in a single interface; your content is never logged to disk or to any cloud by default.
+SOFA is a fully local-first, privacy-focused, multi-purpose AI assistant application. It brings together tools like chat, image generation, watermark removal, and a music/voice sketch generator in a single sidebar-navigated interface; your content is never logged to disk or to any cloud by default.
 
 ## LLM Backend
 
@@ -37,6 +37,10 @@ SOFA-Safe-One-For-All-/
 │       │   ├── schemas.py
 │       │   ├── service.py       # image generation + watermark removal template
 │       │   └── router.py
+│       ├── music/                # Music Creator module (draft/template)
+│       │   ├── schemas.py
+│       │   ├── service.py       # TTS-based placeholder for real music generation
+│       │   └── router.py
 │       └── privacy/              # Secure local tools module
 │           ├── schemas.py
 │           ├── service.py       # temp-file wiping, status report
@@ -44,9 +48,13 @@ SOFA-Safe-One-For-All-/
 ├── static/
 │   ├── css/style.css
 │   ├── js/splash.js              # intro animation controller
-│   └── js/app.js                 # tab switching + API integration
-└── templates/
-    └── index.html                 # splash screen + app shell
+│   └── js/app.js                 # sidebar switching + API integration
+├── templates/
+│   └── index.html                 # splash screen + sidebar app shell
+├── start_sofa.bat                 # Windows launcher (visible console, for debugging)
+├── sofa_silent.bat                 # Windows launcher used by SOFA.vbs (no console)
+├── SOFA.vbs                        # double-click this (or a shortcut to it) to launch silently
+└── stop_sofa.bat                   # stops the server started by SOFA.vbs
 ```
 
 ## Setup
@@ -79,6 +87,12 @@ SOFA-Safe-One-For-All-/
    uvicorn app.main:app --reload
    ```
    Open `http://127.0.0.1:8000` in your browser.
+
+   **On Windows**, you can instead double-click **`SOFA.vbs`** (or a desktop
+   shortcut pointing to it) to launch SOFA with no visible console window —
+   it sets up the venv/dependencies on first run and opens your browser
+   automatically. Use **`stop_sofa.bat`** to stop it, or `start_sofa.bat`
+   (visible console) if you need to see error output while troubleshooting.
 
 ## Privacy
 

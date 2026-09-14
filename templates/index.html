@@ -9,54 +9,57 @@
   <body>
     <!-- ============ GİRİŞ (SPLASH) EKRANI ============ -->
     <section id="splash-screen" aria-label="SOFA giriş ekranı">
-      <div class="splash-content">
-        <p class="splash-tagline" id="splash-tagline">Safe One For All</p>
-
-        <div class="splash-logo-icon" id="splash-logo-icon" aria-hidden="true">
-          <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Kilit (privacy / lock) -->
-            <path d="M75 68 a25 25 0 0 1 50 0 v14" stroke="#5fd6d1" stroke-width="6" stroke-linecap="round" fill="none" />
-            <rect x="70" y="82" width="60" height="42" rx="8" stroke="#5fd6d1" stroke-width="6" fill="none" />
-            <circle cx="100" cy="100" r="5" fill="#5fd6d1" />
-            <line x1="100" y1="105" x2="100" y2="113" stroke="#5fd6d1" stroke-width="5" stroke-linecap="round" />
-
-            <!-- Koltuk (sofa) -->
-            <path
-              d="M38 168 v-22 a10 10 0 0 1 10 -10 h104 a10 10 0 0 1 10 10 v22"
-              stroke="#8fe3df"
-              stroke-width="6"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              fill="none"
-            />
-            <path d="M38 168 v10 M162 168 v10" stroke="#8fe3df" stroke-width="6" stroke-linecap="round" />
-            <path
-              d="M32 150 v-20 a8 8 0 0 1 8 -8 M168 150 v-20 a8 8 0 0 0 -8 -8"
-              stroke="#8fe3df"
-              stroke-width="6"
-              stroke-linecap="round"
-              fill="none"
-            />
-
-            <!-- Uzanan, rahat karakter (relaxed person) -->
-            <circle cx="120" cy="130" r="9" fill="#f2ecd9" />
-            <path d="M58 146 q32 12 54 -6" stroke="#f2ecd9" stroke-width="6" stroke-linecap="round" fill="none" />
-          </svg>
+      <div class="splash-content" id="splash-content">
+        <div class="splash-brand" id="splash-brand">
+          <div class="splash-logo-icon" aria-hidden="true">
+            <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M75 68 a25 25 0 0 1 50 0 v14" stroke="#5fd6d1" stroke-width="6" stroke-linecap="round" fill="none" />
+              <rect x="70" y="82" width="60" height="42" rx="8" stroke="#5fd6d1" stroke-width="6" fill="none" />
+              <circle cx="100" cy="100" r="5" fill="#5fd6d1" />
+              <line x1="100" y1="105" x2="100" y2="113" stroke="#5fd6d1" stroke-width="5" stroke-linecap="round" />
+              <path
+                d="M38 168 v-22 a10 10 0 0 1 10 -10 h104 a10 10 0 0 1 10 10 v22"
+                stroke="#8fe3df"
+                stroke-width="6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                fill="none"
+              />
+              <path d="M38 168 v10 M162 168 v10" stroke="#8fe3df" stroke-width="6" stroke-linecap="round" />
+              <path
+                d="M32 150 v-20 a8 8 0 0 1 8 -8 M168 150 v-20 a8 8 0 0 0 -8 -8"
+                stroke="#8fe3df"
+                stroke-width="6"
+                stroke-linecap="round"
+                fill="none"
+              />
+              <circle cx="120" cy="130" r="9" fill="#f2ecd9" />
+              <path d="M58 146 q32 12 54 -6" stroke="#f2ecd9" stroke-width="6" stroke-linecap="round" fill="none" />
+            </svg>
+          </div>
+          <h1 class="splash-wordmark" id="splash-wordmark">SOFA</h1>
         </div>
 
-        <h1 class="splash-wordmark" id="splash-wordmark" aria-label="SOFA">
-          <span class="letter" data-letter="S">S</span>
-          <span class="letter" data-letter="O">O</span>
-          <span class="letter" data-letter="F">F</span>
-          <span class="letter" data-letter="A">A</span>
-        </h1>
+        <p class="splash-tagline" id="splash-tagline" aria-label="Safe One For All">
+          <span class="word">Safe</span>
+          <span class="word">One</span>
+          <span class="word">For</span>
+          <span class="word">All</span>
+        </p>
+
+        <div class="splash-loading" id="splash-loading">
+          <div class="splash-loading-track">
+            <div class="splash-loading-fill" id="splash-loading-fill"></div>
+          </div>
+          <p class="splash-loading-text" id="splash-loading-text">Yükleniyor... %0</p>
+        </div>
       </div>
     </section>
 
     <!-- ============ ANA UYGULAMA ============ -->
-    <div id="app-shell" hidden>
-      <header class="app-header">
-        <div class="brand">
+    <div id="app-shell">
+      <header class="top-bar">
+        <div class="brand" id="header-brand">
           <div class="brand-icon" aria-hidden="true">
             <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M75 68 a25 25 0 0 1 50 0 v14" stroke="#5fd6d1" stroke-width="8" stroke-linecap="round" fill="none" />
@@ -73,53 +76,73 @@
           </div>
           <span class="brand-name">SOFA</span>
         </div>
-        <nav class="tabs" id="tabs">
-          <button class="tab-btn active" data-tab="chat" type="button">💬 Sohbet</button>
-          <button class="tab-btn" data-tab="media" type="button">🖼️ Medya</button>
-          <button class="tab-btn" data-tab="privacy" type="button">🔒 Gizlilik</button>
-        </nav>
       </header>
 
-      <main class="app-main">
-        <!-- CHAT PANELİ -->
-        <section id="panel-chat" class="panel active">
-          <div id="chat-window" class="chat-window"></div>
-          <form id="chat-form" class="chat-form">
-            <input id="chat-input" type="text" placeholder="SOFA'ya bir şey sor..." autocomplete="off" required />
-            <button type="submit">Gönder</button>
-          </form>
-          <p id="chat-error" class="error-text" hidden></p>
-        </section>
+      <div class="app-body">
+        <nav class="sidebar" id="sidebar">
+          <button class="nav-btn active" data-tab="chat" type="button">💬 Chat</button>
+          <button class="nav-btn" data-tab="media" type="button">🎨 Image Creation</button>
+          <button class="nav-btn" data-tab="music" type="button">🎵 Music Creator</button>
+          <button class="nav-btn" data-tab="privacy" type="button">🔒 Privacy</button>
+        </nav>
 
-        <!-- MEDYA PANELİ -->
-        <section id="panel-media" class="panel" hidden>
-          <div class="media-grid">
-            <div class="media-card">
-              <h3>Görsel Üret</h3>
-              <textarea id="media-prompt" placeholder="Bir görsel tanımla..."></textarea>
-              <button id="media-generate-btn" type="button">Üret</button>
-              <div id="media-generate-result" class="media-result"></div>
-            </div>
-            <div class="media-card">
-              <h3>Filigran Temizle</h3>
-              <input type="file" id="watermark-file" accept="image/*" />
-              <button id="watermark-remove-btn" type="button">Temizle</button>
-              <div id="watermark-result" class="media-result"></div>
-            </div>
-          </div>
-          <p id="media-error" class="error-text" hidden></p>
-        </section>
+        <main class="content">
+          <!-- CHAT PANELİ -->
+          <section id="panel-chat" class="panel active">
+            <div id="chat-window" class="chat-window"></div>
+            <form id="chat-form" class="chat-form">
+              <input id="chat-input" type="text" placeholder="SOFA'ya bir şey sor..." autocomplete="off" required />
+              <button type="submit">Gönder</button>
+            </form>
+            <p id="chat-error" class="error-text" hidden></p>
+          </section>
 
-        <!-- GİZLİLİK PANELİ -->
-        <section id="panel-privacy" class="panel" hidden>
-          <div class="privacy-card">
-            <h3>Gizlilik Durumu</h3>
-            <p id="privacy-status-text">Yükleniyor...</p>
-            <button id="privacy-wipe-btn" type="button">Geçici Dosyaları Sil</button>
-            <p id="privacy-wipe-result"></p>
-          </div>
-        </section>
-      </main>
+          <!-- IMAGE CREATION PANELİ -->
+          <section id="panel-media" class="panel" hidden>
+            <div class="media-grid">
+              <div class="media-card">
+                <h3>Görsel Üret</h3>
+                <textarea id="media-prompt" placeholder="Bir görsel tanımla..."></textarea>
+                <button id="media-generate-btn" type="button">Üret</button>
+                <div id="media-generate-result" class="media-result"></div>
+              </div>
+              <div class="media-card">
+                <h3>Filigran Temizle</h3>
+                <input type="file" id="watermark-file" accept="image/*" />
+                <button id="watermark-remove-btn" type="button">Temizle</button>
+                <div id="watermark-result" class="media-result"></div>
+              </div>
+            </div>
+            <p id="media-error" class="error-text" hidden></p>
+          </section>
+
+          <!-- MUSIC CREATOR PANELİ -->
+          <section id="panel-music" class="panel" hidden>
+            <div class="media-card music-card">
+              <h3>Music Creator</h3>
+              <p class="panel-hint">
+                Taslak modül: metinden kısa bir sesli taslak üretir (yerel ağ geçidinin TTS ucu
+                üzerinden). Gerçek müzik üretimi için <code>app/modules/music/service.py</code>
+                içindeki TODO'ya bakın.
+              </p>
+              <textarea id="music-prompt" placeholder="Bir müzik/ses fikri tanımla..."></textarea>
+              <button id="music-generate-btn" type="button">Üret</button>
+              <div id="music-result" class="media-result"></div>
+            </div>
+            <p id="music-error" class="error-text" hidden></p>
+          </section>
+
+          <!-- PRIVACY PANELİ -->
+          <section id="panel-privacy" class="panel" hidden>
+            <div class="privacy-card">
+              <h3>Gizlilik Durumu</h3>
+              <p id="privacy-status-text">Yükleniyor...</p>
+              <button id="privacy-wipe-btn" type="button">Geçici Dosyaları Sil</button>
+              <p id="privacy-wipe-result"></p>
+            </div>
+          </section>
+        </main>
+      </div>
     </div>
 
     <script src="/static/js/splash.js"></script>

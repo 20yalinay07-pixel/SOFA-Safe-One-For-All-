@@ -4,10 +4,11 @@
  */
 
 // ---------- Sekme (Tab) Yönetimi ----------
-const tabButtons = document.querySelectorAll(".tab-btn");
+const tabButtons = document.querySelectorAll(".nav-btn");
 const panels = {
   chat: document.getElementById("panel-chat"),
   media: document.getElementById("panel-media"),
+  music: document.getElementById("panel-music"),
   privacy: document.getElementById("panel-privacy"),
 };
 
@@ -162,6 +163,47 @@ watermarkRemoveBtn.addEventListener("click", async () => {
     watermarkResult.textContent = "";
   } finally {
     watermarkRemoveBtn.disabled = false;
+  }
+});
+
+// ---------- Music Creator Modülü ----------
+const musicPromptInput = document.getElementById("music-prompt");
+const musicGenerateBtn = document.getElementById("music-generate-btn");
+const musicResult = document.getElementById("music-result");
+const musicError = document.getElementById("music-error");
+
+musicGenerateBtn.addEventListener("click", async () => {
+  const prompt = musicPromptInput.value.trim();
+  if (!prompt) return;
+
+  musicError.hidden = true;
+  musicGenerateBtn.disabled = true;
+  musicResult.textContent = "Üretiliyor...";
+
+  try {
+    const response = await fetch("/api/music/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt }),
+    });
+
+    if (!response.ok) {
+      const detail = await response.json().catch(() => ({}));
+      throw new Error(detail.detail || `Sunucu hatası (HTTP ${response.status})`);
+    }
+
+    const data = await response.json();
+    musicResult.innerHTML = "";
+    const audio = document.createElement("audio");
+    audio.controls = true;
+    audio.src = `data:audio/mpeg;base64,${data.audio_base64}`;
+    musicResult.appendChild(audio);
+  } catch (err) {
+    musicError.textContent = `Hata: ${err.message}`;
+    musicError.hidden = false;
+    musicResult.textContent = "";
+  } finally {
+    musicGenerateBtn.disabled = false;
   }
 });
 

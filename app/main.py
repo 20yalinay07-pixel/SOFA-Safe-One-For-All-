@@ -17,6 +17,7 @@ from fastapi.templating import Jinja2Templates
 from app.config import get_settings
 from app.modules.chat.router import router as chat_router
 from app.modules.media.router import router as media_router
+from app.modules.music.router import router as music_router
 from app.modules.privacy.router import router as privacy_router
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -36,6 +37,7 @@ templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 # Modül router'larını uygulamaya bağla
 app.include_router(chat_router)
 app.include_router(media_router)
+app.include_router(music_router)
 app.include_router(privacy_router)
 
 
