@@ -2,20 +2,20 @@
 
 Local AI chatbox for everything, you need to create image, create music, chat or do anything safely when talking to AI? You don't need to search thousands of websites to find the best AI versions, SOFA has you covered; you can do everything with this AI and it's fully local so no cloud saving will happen.
 
-## Nedir?
+## What is it?
 
-SOFA, tamamen yerel-öncelikli (local-first) ve gizlilik odaklı bir çok işlevli AI yardımcı uygulamasıdır. Sohbet, görsel üretimi ve filigran temizleme gibi araçları tek bir arayüzde birleştirir; içerikleriniz varsayılan olarak diske veya bulutta hiçbir yere loglanmaz.
+SOFA is a fully local-first, privacy-focused, multi-purpose AI assistant application. It brings together tools like chat, image generation, and watermark removal in a single interface; your content is never logged to disk or to any cloud by default.
 
-## Kullanılan LLM Altyapısı
+## LLM Backend
 
-SOFA, ücretsiz API'ler için tek tek sağlayıcı hesabı açmanızı gerektirmez. Bunun yerine, yerelde çalışan **OpenAI-uyumlu ağ geçitlerini (gateway)** kullanır:
+SOFA doesn't require you to sign up for and manage separate API keys for every free provider. Instead, it talks to locally running **OpenAI-compatible gateways**:
 
-- **[OmniRoute](https://github.com/diegosouzapw/OmniRoute)** — zero-config, kurulum sonrası anahtar gerekmeden 290+ sağlayıcıya erişim sağlar. Varsayılan uç: `http://localhost:20128/v1`
-- **[FreeLLMAPI](https://github.com/tashfeenahmed/freellmapi)** — 34+ ücretsiz LLM sağlayıcısını tek bir `/v1` ucunda birleştirir. Varsayılan uç: `http://localhost:3001/v1`
+- **[OmniRoute](https://github.com/diegosouzapw/OmniRoute)** — zero-config, gives access to 290+ providers with no key required after install. Default endpoint: `http://localhost:20128/v1`
+- **[FreeLLMAPI](https://github.com/tashfeenahmed/freellmapi)** — combines 34+ free LLM providers behind a single `/v1` endpoint. Default endpoint: `http://localhost:3001/v1`
 
-Hangisinin kullanılacağı `.env` dosyasındaki `CHAT_PROVIDER` (`omniroute` veya `freellmapi`) ile seçilir; her iki servis de OpenAI'nin `/chat/completions` ve `/images/generations` formatını kullandığı için SOFA'nın backend'i tek bir generic istemci ile her ikisiyle de konuşabilir.
+Which one is used is selected via `CHAT_PROVIDER` (`omniroute` or `freellmapi`) in the `.env` file; since both services use OpenAI's `/chat/completions` and `/images/generations` format, SOFA's backend can talk to either one through a single generic client.
 
-## Klasör Yapısı
+## Folder Structure
 
 ```
 SOFA-Safe-One-For-All-/
@@ -24,64 +24,64 @@ SOFA-Safe-One-For-All-/
 ├── .gitignore
 ├── requirements.txt
 ├── app/
-│   ├── main.py                  # FastAPI giriş noktası
-│   ├── config.py                # .env tabanlı merkezi ayarlar
+│   ├── main.py                  # FastAPI entry point
+│   ├── config.py                # centralized .env-based settings
 │   ├── utils/
-│   │   └── logger.py            # gizlilik-öncelikli logger
+│   │   └── logger.py            # privacy-first logger
 │   └── modules/
-│       ├── chat/                # Sohbet & Asistan modülü
+│       ├── chat/                # Chat & Assistant module
 │       │   ├── schemas.py
-│       │   ├── service.py       # OmniRoute / FreeLLMAPI istemcisi
+│       │   ├── service.py       # OmniRoute / FreeLLMAPI client
 │       │   └── router.py
-│       ├── media/                # Medya üretimi & işleme modülü
+│       ├── media/                # Media generation & processing module
 │       │   ├── schemas.py
-│       │   ├── service.py       # görsel üretimi + filigran temizleme taslağı
+│       │   ├── service.py       # image generation + watermark removal template
 │       │   └── router.py
-│       └── privacy/              # Güvenli yerel araçlar modülü
+│       └── privacy/              # Secure local tools module
 │           ├── schemas.py
-│           ├── service.py       # geçici dosya temizleme, durum raporu
+│           ├── service.py       # temp-file wiping, status report
 │           └── router.py
 ├── static/
 │   ├── css/style.css
-│   ├── js/splash.js              # giriş animasyonu kontrolcüsü
-│   └── js/app.js                 # sekme + API entegrasyonu
+│   ├── js/splash.js              # intro animation controller
+│   └── js/app.js                 # tab switching + API integration
 └── templates/
-    └── index.html                 # giriş ekranı + uygulama kabuğu
+    └── index.html                 # splash screen + app shell
 ```
 
-## Kurulum
+## Setup
 
-1. **Bir LLM ağ geçidi kurun** (en az birini):
+1. **Install an LLM gateway** (at least one):
    ```bash
-   # OmniRoute (önerilen, zero-config)
+   # OmniRoute (recommended, zero-config)
    npm install -g omniroute
    omniroute
 
-   # veya FreeLLMAPI
+   # or FreeLLMAPI
    curl -fsSL https://freellmapi.co/install.sh | bash
    ```
 
-2. **Python bağımlılıklarını kurun:**
+2. **Install Python dependencies:**
    ```bash
    python -m venv .venv
    source .venv/bin/activate   # Windows: .venv\Scripts\activate
    pip install -r requirements.txt
    ```
 
-3. **Ortam değişkenlerini ayarlayın:**
+3. **Configure environment variables:**
    ```bash
    cp .env.example .env
-   # Gerekirse CHAT_PROVIDER, base URL ve anahtarları düzenleyin.
+   # Edit CHAT_PROVIDER, base URLs and keys if needed.
    ```
 
-4. **Uygulamayı çalıştırın:**
+4. **Run the app:**
    ```bash
    uvicorn app.main:app --reload
    ```
-   Tarayıcıdan `http://127.0.0.1:8000` adresini açın.
+   Open `http://127.0.0.1:8000` in your browser.
 
-## Gizlilik
+## Privacy
 
-- `SOFA_NO_LOG=true` (varsayılan) iken hiçbir sohbet/medya içeriği diske veya konsola yazılmaz.
-- "Gizlilik" sekmesinden tek tıkla tüm yerel geçici dosyalar silinebilir.
-- Hiçbir veri, kullanıcının açıkça yapılandırdığı yerel ağ geçidi dışında bir yere gönderilmez.
+- With `SOFA_NO_LOG=true` (default), no chat/media content is ever written to disk or the console.
+- All local temp files can be wiped with a single click from the "Privacy" tab.
+- No data is ever sent anywhere except the local gateway you explicitly configured.
