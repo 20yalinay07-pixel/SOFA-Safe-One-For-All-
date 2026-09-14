@@ -15,22 +15,40 @@ class Settings(BaseSettings):
     sofa_port: int = 8000
     sofa_no_log: bool = True  # Gizlilik: varsayılan olarak içerik loglanmaz
 
-    # --- Chat Modülü ---
-    # SOFA, ücretsiz LLM'lere tek tek anahtar aramak yerine yerel bir
-    # OpenAI-uyumlu ağ geçidi (gateway) üzerinden erişir:
+    # --- Ağ Geçitleri (Gateways) ---
+    # SOFA, ücretsiz LLM'lere tek tek anahtar aramak yerine yerel
+    # OpenAI-uyumlu ağ geçitleri (gateway) üzerinden erişir:
     #   - OmniRoute:  https://github.com/diegosouzapw/OmniRoute
     #   - FreeLLMAPI: https://github.com/tashfeenahmed/freellmapi
-    chat_provider: str = "omniroute"  # "omniroute" | "freellmapi"
-    chat_model: str = "auto"
-
     omniroute_base_url: str = "http://localhost:20128/v1"
     omniroute_api_key: str = ""
 
     freellmapi_base_url: str = "http://localhost:3001/v1"
     freellmapi_api_key: str = ""
 
-    # --- Media Modülü ---
-    media_provider: str = "omniroute"  # aynı gateway'in /v1/images/generations ucu kullanılır
+    # --- Chat Modülü ---
+    # Fallback zinciri: virgülle ayrılmış sağlayıcı sırası. İlk sağlayıcı
+    # başarısız olursa (ağ hatası/HTTP hatası/eksik anahtar) otomatik
+    # olarak bir sonrakine geçilir. Varsayılan: FreeLLMAPI (ör. Groq - hızlı
+    # ve güvenilir) önce, OmniRoute yedek olarak sonra.
+    chat_provider_order: str = "freellmapi,omniroute"
+    chat_model: str = "auto"
+
+    # --- Media (Image Creation) Modülü ---
+    # Görsel üretimi için fallback zinciri. Varsayılan: OmniRoute önce
+    # (ör. Stability AI orada bağlıysa), FreeLLMAPI yedek olarak sonra.
+    media_provider_order: str = "omniroute,freellmapi"
+
+    # --- Music Creator Modülü ---
+    # 1. Öncelik: SunoAPI.org (gerçek müzik üretimi). Anahtar tanımlıysa
+    #    kullanılır: https://sunoapi.org
+    # 2. Yedek: aynı ağ geçitlerinin metinden-sese (TTS) ucu — gerçek müzik
+    #    üretmez, yalnızca bir ses taslağı döner (SunoAPI hiç tanımlı değilse
+    #    veya başarısız olursa devreye girer).
+    sunoapi_api_key: str = ""
+    music_provider_order: str = "omniroute,freellmapi"
+    music_tts_model: str = "tts-1"
+    music_tts_voice: str = "alloy"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
