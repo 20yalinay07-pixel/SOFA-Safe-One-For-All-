@@ -214,7 +214,8 @@ musicGenerateBtn.addEventListener("click", async () => {
     musicResult.appendChild(note);
     const audio = document.createElement("audio");
     audio.controls = true;
-    audio.src = `data:audio/mpeg;base64,${data.audio_base64}`;
+    const mime = data.audio_format === "wav" ? "audio/wav" : "audio/mpeg";
+    audio.src = `data:${mime};base64,${data.audio_base64}`;
     musicResult.appendChild(audio);
   } catch (err) {
     musicError.textContent = `Hata: ${err.message}`;

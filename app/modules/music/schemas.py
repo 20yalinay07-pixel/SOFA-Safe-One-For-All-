@@ -10,3 +10,4 @@ class MusicGenerateResponse(BaseModel):
     status: str
     message: str
     audio_base64: str | None = None
+    audio_format: str = "mp3"

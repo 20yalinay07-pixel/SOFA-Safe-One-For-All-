@@ -2,13 +2,17 @@
 Music Creator Module - Servis Katmanı
 
 Öncelik sırası:
-  1. SunoAPI.org (https://sunoapi.org) - gerçek müzik üretimi. `.env`'de
-     SUNOAPI_API_KEY tanımlıysa kullanılır. Asenkron çalışır: bir görev
-     (task) başlatılır, sonucu hazır olana kadar periyodik olarak sorgulanır.
-  2. Yedek: MUSIC_PROVIDER_ORDER'daki ağ geçitlerinin metinden-sese (TTS,
+  1. OmniRoute'un kendi `/v1/music/generations` ucu (MUSIC_MODEL ayarlıysa) -
+     gerçek müzik üretimi. OmniRoute, KIE.AI (Suno) veya MiniMax gibi
+     sağlayıcılara görevi kendi içinde gönderip bekler (polling) ve tek
+     istekte hazır sesi döner - bizim ayrıca görev takip etmemiz gerekmez.
+  2. SunoAPI.org (https://sunoapi.org) - gerçek müzik üretimi, ayrı bir
+     hesap/anahtar gerektirir (SUNOAPI_API_KEY). Asenkron çalışır: bir görev
+     (task) başlatılır, sonucu hazır olana kadar biz periyodik sorgularız.
+  3. Yedek: MUSIC_PROVIDER_ORDER'daki ağ geçitlerinin metinden-sese (TTS,
      `/audio/speech`) ucu. Bu gerçek bir müzik üretmez, yalnızca bir konuşma
-     sesi taslağı döner; SunoAPI tanımlı değilse veya başarısız olursa
-     devreye girer.
+     sesi taslağı döner; yukarıdakilerin ikisi de tanımlı değilse veya
+     başarısız olursa devreye girer.
 """
 import asyncio
 import base64
@@ -25,9 +29,41 @@ SUNOAPI_BASE_URL = "https://api.sunoapi.org"
 SUNOAPI_POLL_INTERVAL_SECONDS = 5
 SUNOAPI_MAX_POLL_ATTEMPTS = 36  # ~3 dakika (5s * 36)
 
+OMNIROUTE_MUSIC_TIMEOUT_SECONDS = 310  # OmniRoute'un kendi ic bekleme suresinden (300s) biraz fazla
+
 
 class MusicServiceError(Exception):
     """Music servisiyle ilgili kullanıcıya gösterilebilir hatalar."""
+
+
+async def _generate_with_omniroute_music(prompt: str) -> tuple[bytes, str]:
+    """
+    OmniRoute'un native `/v1/music/generations` ucuyla gerçek müzik üretir
+    (ör. KIE.AI üzerinden Suno, ya da MiniMax). OmniRoute görev oluşturma +
+    bekleme (polling) işini kendi içinde yapar; biz tek istekte hazır sonucu
+    alırız (bu yüzden zaman aşımı geniş tutulur, istek uzun sürebilir).
+    Dönüş: (ses_baytları, ses_formatı ör. "mp3"/"wav")
+    """
+    settings = get_settings()
+    headers = {"Content-Type": "application/json"}
+    if settings.omniroute_api_key:
+        headers["Authorization"] = f"Bearer {settings.omniroute_api_key}"
+
+    payload = {"model": settings.music_model, "prompt": prompt}
+    url = f"{settings.omniroute_base_url.rstrip('/')}/music/generations"
+
+    async with httpx.AsyncClient(timeout=OMNIROUTE_MUSIC_TIMEOUT_SECONDS) as client:
+        response = await client.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        body = response.json()
+        tracks = body.get("data")
+        if not isinstance(tracks, list) or not tracks:
+            raise MusicServiceError(f"OmniRoute müzik üretimi boş/geçersiz sonuç döndü: {body}")
+        track = tracks[0]
+        b64 = track.get("b64_json")
+        if not b64:
+            raise MusicServiceError(f"OmniRoute müzik üretimi ses verisi döndürmedi: {track}")
+        return base64.b64decode(b64), track.get("format", "mp3")
 
 
 async def _generate_with_sunoapi(prompt: str, api_key: str) -> bytes:
@@ -123,40 +159,49 @@ async def _generate_with_tts_fallback(prompt: str) -> bytes:
     raise MusicServiceError("Tüm ses üretim sağlayıcıları başarısız oldu: " + "; ".join(errors))
 
 
-async def generate_music(prompt: str) -> tuple[bytes, str, str | None]:
+def _describe_exception(exc: Exception) -> str:
+    """Bir istisnayı kullanıcıya gösterilebilir kısa bir metne çevirir."""
+    if isinstance(exc, httpx.HTTPStatusError):
+        snippet = error_body_snippet(exc.response)
+        return f"HTTP {exc.response.status_code}" + (f" - {snippet}" if snippet else "")
+    if isinstance(exc, httpx.RequestError):
+        return "ağa ulaşılamadı"
+    return str(exc)
+
+
+async def generate_music(prompt: str) -> tuple[bytes, str, str | None, str]:
     """
-    SunoAPI.org ile gerçek müzik üretmeyi dener; olmazsa TTS taslağına düşer.
-    Dönüş: (ses_baytları, kaynak, sunoapi_basarisiz_olduysa_nedeni)
-    "kaynak": "sunoapi" (gerçek müzik) veya "tts" (yer tutucu, şarkı değil).
+    Gerçek müzik üretmeyi dener (önce OmniRoute native, sonra SunoAPI.org);
+    ikisi de tanımlı değilse veya başarısız olursa TTS taslağına düşer.
+    Dönüş: (ses_baytları, kaynak, başarısız_denemelerin_nedeni, ses_formatı)
+    "kaynak": "omniroute-music" veya "sunoapi" (gerçek müzik) ya da "tts" (yer tutucu, şarkı değil).
     """
     settings = get_settings()
+    attempted_reasons: list[str] = []
+
+    if settings.music_model:
+        try:
+            audio, audio_format = await _generate_with_omniroute_music(prompt)
+            safe_log_event(logger, "music_generate_success", {"provider": "omniroute-music"})
+            return audio, "omniroute-music", None, audio_format
+        except Exception as exc:
+            reason = _describe_exception(exc)
+            attempted_reasons.append(f"OmniRoute müzik: {reason}")
+            safe_log_event(logger, "music_generate_omniroute_music_failed", {})
 
     if settings.sunoapi_api_key:
         try:
             audio = await _generate_with_sunoapi(prompt, settings.sunoapi_api_key)
             safe_log_event(logger, "music_generate_success", {"provider": "sunoapi"})
-            return audio, "sunoapi", None
-        except httpx.HTTPStatusError as exc:
-            snippet = error_body_snippet(exc.response)
-            reason = f"HTTP {exc.response.status_code}" + (f" - {snippet}" if snippet else "")
-            safe_log_event(logger, "music_generate_http_error", {"provider": "sunoapi", "status": exc.response.status_code})
-        except httpx.RequestError:
-            reason = "SunoAPI.org'a ağ üzerinden ulaşılamadı."
-            safe_log_event(logger, "music_generate_network_error", {"provider": "sunoapi"})
-        except MusicServiceError as exc:
-            reason = str(exc)
-            safe_log_event(logger, "music_generate_sunoapi_failed", {})
+            return audio, "sunoapi", None, "mp3"
         except Exception as exc:
-            # SunoAPI'nin yanıt şekli beklenmedik olsa bile TTS yedeğine
-            # düşmeye devam edelim - tüm istek çökmesin.
-            reason = f"beklenmeyen hata: {exc}"
-            safe_log_event(logger, "music_generate_sunoapi_unexpected_error", {})
-        # SunoAPI başarısız oldu; aşağıdaki TTS taslağına düşülüyor.
-        audio = await _generate_with_tts_fallback(prompt)
-        return audio, "tts", reason
+            reason = _describe_exception(exc)
+            attempted_reasons.append(f"SunoAPI.org: {reason}")
+            safe_log_event(logger, "music_generate_sunoapi_failed", {})
 
     audio = await _generate_with_tts_fallback(prompt)
-    return audio, "tts", None
+    combined_reason = "; ".join(attempted_reasons) if attempted_reasons else None
+    return audio, "tts", combined_reason, "mp3"
 
 
 def bytes_to_base64(data: bytes) -> str:
