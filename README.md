@@ -51,6 +51,7 @@ SOFA-Safe-One-For-All-/
 │   └── js/app.js                 # sidebar switching + API integration
 ├── templates/
 │   └── index.html                 # splash screen + sidebar app shell
+├── setup.bat                       # Windows one-time installer + desktop shortcut creator
 ├── start_sofa.bat                 # Windows launcher (visible console, for debugging)
 ├── sofa_silent.bat                 # Windows launcher used by SOFA.vbs (no console)
 ├── SOFA.vbs                        # double-click this (or a shortcut to it) to launch silently
@@ -88,11 +89,12 @@ SOFA-Safe-One-For-All-/
    ```
    Open `http://127.0.0.1:8000` in your browser.
 
-   **On Windows**, you can instead double-click **`SOFA.vbs`** (or a desktop
-   shortcut pointing to it) to launch SOFA with no visible console window —
-   it sets up the venv/dependencies on first run and opens your browser
-   automatically. Use **`stop_sofa.bat`** to stop it, or `start_sofa.bat`
-   (visible console) if you need to see error output while troubleshooting.
+   **On Windows**, run **`setup.bat`** once instead — it creates the venv,
+   installs dependencies, creates `.env`, and adds a **"SOFA AI"** shortcut
+   to your Desktop. After that, just double-click the shortcut to launch
+   SOFA with no visible console window (it opens your browser automatically).
+   Use **`stop_sofa.bat`** to stop it, or `start_sofa.bat` (visible console)
+   if you need to see error output while troubleshooting.
 
 ## Privacy
 
