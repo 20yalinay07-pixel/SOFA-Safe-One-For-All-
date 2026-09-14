@@ -108,6 +108,17 @@ Section "SOFA" SecMain
 SectionEnd
 
 Section "Uninstall"
+    ; --- Calisan SOFA/OmniRoute sureclerini durdur (yoksa dosyalar "kullanimda" hatasi verir) ---
+    DetailPrint "SOFA/OmniRoute calisiyorsa durduruluyor..."
+    FileOpen $0 "$TEMP\sofa_uninstall_stop.bat" w
+    FileWrite $0 "@echo off$\r$\n"
+    FileWrite $0 'for /f "tokens=5" %%p in ($\'netstat -ano ^| findstr :8000 ^| findstr LISTENING$\') do taskkill /F /PID %%p >nul 2>&1$\r$\n'
+    FileWrite $0 'for /f "tokens=5" %%p in ($\'netstat -ano ^| findstr :20128 ^| findstr LISTENING$\') do taskkill /F /PID %%p >nul 2>&1$\r$\n'
+    FileClose $0
+    nsExec::ExecToLog '"$TEMP\sofa_uninstall_stop.bat"'
+    Pop $0
+    Delete "$TEMP\sofa_uninstall_stop.bat"
+
     Delete "$DESKTOP\SOFA AI.lnk"
     Delete "$SMPROGRAMS\SOFA\SOFA AI.lnk"
     Delete "$SMPROGRAMS\SOFA\SOFA Durdur.lnk"
