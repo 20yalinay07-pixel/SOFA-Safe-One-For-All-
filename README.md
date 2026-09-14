@@ -65,6 +65,29 @@ SOFA-Safe-One-For-All-/
 
 ## Setup
 
+### Windows — recommended: `SOFA-Setup.exe`
+
+Download **`SOFA-Setup.exe`** from the [Releases](../../releases) page and run it.
+It's a real installer wizard: sets up the Python venv, installs dependencies,
+creates `.env`, best-effort installs OmniRoute if `npm` is on your system, and
+adds a **"SOFA AI"** Desktop + Start Menu shortcut with the SOFA icon.
+
+- **Launching**: click the "SOFA AI" shortcut — no visible console window, your
+  browser opens automatically, and OmniRoute is started in the background too
+  if it's installed. Use `stop_sofa.bat` (in the install folder) to stop it, or
+  `start_sofa.bat` (visible console) if you need to see error output.
+- **Uninstalling**: three ways — double-click `Uninstall.exe` inside the install
+  folder, use the "Kaldır" shortcut it adds to the SOFA Start Menu folder, or
+  remove it like any other app from Windows Settings → Apps.
+- Don't have a release build yet, or want to build it yourself? See
+  [Building the Windows installer](#building-the-windows-installer) below.
+
+Either way, see [Before you can actually use it](#before-you-can-actually-use-it)
+— a fresh install has no gateway/API key configured yet, that's still a
+one-time manual step.
+
+### Manual setup (any OS)
+
 1. **Install an LLM gateway** (at least one):
    ```bash
    # OmniRoute (recommended, zero-config)
@@ -93,25 +116,6 @@ SOFA-Safe-One-For-All-/
    uvicorn app.main:app --reload
    ```
    Open `http://127.0.0.1:8000` in your browser.
-
-   **On Windows**, use **`SOFA-Setup.exe`** instead (download it from the
-   [Releases](../../releases) page, or build it yourself — see below) —
-   the official installer: a real wizard that sets up the venv, installs
-   dependencies, creates `.env`, best-effort installs OmniRoute if `npm`
-   is available, and adds a **"SOFA AI"** Desktop + Start Menu shortcut
-   with the SOFA icon.
-
-   **Uninstalling**: the installer also drops an `Uninstall.exe` inside
-   the install folder, so if you decide you don't want it, you can remove
-   everything three ways — double-click `Uninstall.exe` directly, use the
-   "Kaldır" (Uninstall) shortcut it adds to the SOFA Start Menu folder, or
-   remove it like any other app from Windows Settings → Apps.
-
-   Either way, launching SOFA afterwards (via the shortcut or `SOFA.vbs`)
-   starts it with no visible console window and starts OmniRoute in the
-   background automatically if it's installed. Use **`stop_sofa.bat`** to
-   stop both, or `start_sofa.bat` (visible console) if you need to see
-   error output while troubleshooting.
 
 ### Building the Windows installer
 
