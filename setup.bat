@@ -47,13 +47,28 @@ if errorlevel 1 (
 REM --- .env ---
 if not exist ".env" (
     copy ".env.example" ".env" >nul
-    echo [3/4] .env dosyasi olusturuldu ^(.env.example'dan kopyalandi^).
+    echo [3/5] .env dosyasi olusturuldu ^(.env.example'dan kopyalandi^).
 ) else (
-    echo [3/4] .env dosyasi zaten mevcut, atlaniyor.
+    echo [3/5] .env dosyasi zaten mevcut, atlaniyor.
+)
+
+REM --- OmniRoute (npm kuruluysa otomatik kurulur) ---
+where npm >nul 2>&1
+if errorlevel 1 (
+    echo [4/5] npm bulunamadi, OmniRoute kurulumu atlandi ^(Node.js kurduktan
+    echo        sonra "npm install -g omniroute" ile elle kurabilirsiniz^).
+) else (
+    where omniroute >nul 2>&1
+    if errorlevel 1 (
+        echo [4/5] OmniRoute kuruluyor ^(npm install -g omniroute^)...
+        call npm install -g omniroute
+    ) else (
+        echo [4/5] OmniRoute zaten kurulu, atlaniyor.
+    )
 )
 
 REM --- Masaustu kisayolu ---
-echo [4/4] Masaustu kisayolu olusturuluyor...
+echo [5/5] Masaustu kisayolu olusturuluyor...
 
 set "SHORTCUT_VBS=%TEMP%\sofa_make_shortcut.vbs"
 > "%SHORTCUT_VBS%" echo Set oWS = WScript.CreateObject("WScript.Shell")
@@ -62,6 +77,7 @@ set "SHORTCUT_VBS=%TEMP%\sofa_make_shortcut.vbs"
 >> "%SHORTCUT_VBS%" echo oLink.TargetPath = "%~dp0SOFA.vbs"
 >> "%SHORTCUT_VBS%" echo oLink.WorkingDirectory = "%~dp0"
 >> "%SHORTCUT_VBS%" echo oLink.Description = "SOFA - Safe One For All"
+>> "%SHORTCUT_VBS%" echo oLink.IconLocation = "%~dp0SOFA.ico"
 >> "%SHORTCUT_VBS%" echo oLink.Save
 
 cscript //nologo "%SHORTCUT_VBS%"

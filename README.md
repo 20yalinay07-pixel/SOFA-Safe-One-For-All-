@@ -54,7 +54,10 @@ SOFA-Safe-One-For-All-/
 │   └── js/app.js                 # sidebar switching + API integration
 ├── templates/
 │   └── index.html                 # splash screen + sidebar app shell
-├── setup.bat                       # Windows one-time installer + desktop shortcut creator
+├── SOFA.ico                         # app/shortcut icon
+├── installer/
+│   └── SOFA_Setup.nsi               # NSIS source for the Windows SOFA-Setup.exe installer
+├── setup.bat                       # Windows one-time installer script + desktop shortcut creator
 ├── start_sofa.bat                 # Windows launcher (visible console, for debugging)
 ├── sofa_silent.bat                 # Windows launcher used by SOFA.vbs (no console)
 ├── SOFA.vbs                        # double-click this (or a shortcut to it) to launch silently
@@ -92,14 +95,31 @@ SOFA-Safe-One-For-All-/
    ```
    Open `http://127.0.0.1:8000` in your browser.
 
-   **On Windows**, run **`setup.bat`** once instead — it creates the venv,
-   installs dependencies, creates `.env`, and adds a **"SOFA AI"** shortcut
-   to your Desktop. After that, just double-click the shortcut to launch
-   SOFA with no visible console window (it opens your browser automatically).
-   If OmniRoute is installed (`npm install -g omniroute`), the launcher
-   starts it in the background automatically. Use **`stop_sofa.bat`** to
+   **On Windows**, use **`SOFA-Setup.exe`** instead (built from
+   `installer/SOFA_Setup.nsi`; see below) — a real installer wizard that
+   sets up the venv, installs dependencies, creates `.env`, best-effort
+   installs OmniRoute if `npm` is available, and adds a **"SOFA AI"**
+   Desktop + Start Menu shortcut with the SOFA icon — plus an uninstaller.
+   If you'd rather not run an installer, `setup.bat` does the same thing
+   as a plain script instead of a wizard.
+
+   Either way, launching SOFA afterwards (via the shortcut or `SOFA.vbs`)
+   starts it with no visible console window and starts OmniRoute in the
+   background automatically if it's installed. Use **`stop_sofa.bat`** to
    stop both, or `start_sofa.bat` (visible console) if you need to see
    error output while troubleshooting.
+
+### Building the Windows installer
+
+`SOFA-Setup.exe` isn't committed to the repo (it's a build artifact); build
+it yourself with [NSIS](https://nsis.sourceforge.io/) (`sudo apt install nsis`
+on Linux/WSL, or the Windows installer from the NSIS site):
+
+```bash
+makensis installer/SOFA_Setup.nsi
+```
+
+This produces `installer/SOFA-Setup.exe`.
 
 ## Before you can actually use it
 

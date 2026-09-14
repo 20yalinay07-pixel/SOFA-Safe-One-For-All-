@@ -20,3 +20,6 @@ Thumbs.db
 # SOFA gizlilik: hiçbir log/geçici dosya repoya girmez
 *.log
 sofa_temp/
+
+# Derlenen installer (kaynak installer/SOFA_Setup.nsi'den yeniden üretilir)
+installer/SOFA-Setup.exe
