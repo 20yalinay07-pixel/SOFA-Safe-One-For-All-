@@ -1,0 +1,348 @@
+/* ===========================================================
+   SOFA (Safe One For All) - Ana Stil Dosyası
+   Logo paletine uygun: koyu lacivert zemin + turkuaz/krem vurgular.
+   =========================================================== */
+
+:root {
+  --navy-deep: #0a1930;
+  --navy: #10213f;
+  --navy-light: #16294d;
+  --teal: #5fd6d1;
+  --teal-soft: #8fe3df;
+  --cream: #f2ecd9;
+  --danger: #ff6b6b;
+  --radius: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: radial-gradient(circle at center, var(--navy-light) 0%, var(--navy-deep) 100%);
+  color: var(--cream);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ============ GİRİŞ (SPLASH) EKRANI ============ */
+#splash-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, var(--navy-light) 0%, var(--navy-deep) 100%);
+  z-index: 1000;
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+#splash-screen.fade-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.splash-content {
+  text-align: center;
+  padding: 1rem;
+}
+
+.splash-tagline {
+  font-size: clamp(0.85rem, 2.4vw, 1.15rem);
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--teal-soft);
+  opacity: 0;
+  margin: 0 0 2rem;
+  animation: fadeInDown 1s ease forwards;
+}
+
+.splash-logo-icon {
+  width: 110px;
+  height: 110px;
+  margin: 0 auto 1.25rem;
+  opacity: 0;
+  animation: fadeInScale 0.8s ease forwards;
+  animation-delay: 0.6s;
+}
+
+.splash-logo-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.splash-wordmark {
+  font-size: clamp(2.5rem, 9vw, 4.5rem);
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  margin: 0;
+}
+
+.splash-wordmark .letter {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(20px) scale(0.7);
+  color: var(--cream);
+  animation: letterPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.splash-wordmark .letter:nth-child(1) {
+  animation-delay: 1.1s;
+}
+.splash-wordmark .letter:nth-child(2) {
+  animation-delay: 1.35s;
+}
+.splash-wordmark .letter:nth-child(3) {
+  animation-delay: 1.6s;
+}
+.splash-wordmark .letter:nth-child(4) {
+  animation-delay: 1.85s;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes letterPop {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ============ UYGULAMA KABUĞU (APP SHELL) ============ */
+#app-shell {
+  opacity: 0;
+  animation: fadeInDown 0.6s ease forwards;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.brand-icon {
+  width: 36px;
+  height: 36px;
+}
+
+.brand-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.35rem;
+  background: var(--navy);
+  padding: 0.35rem;
+  border-radius: 999px;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--cream);
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.tab-btn.active,
+.tab-btn:hover {
+  background: var(--teal);
+  color: var(--navy-deep);
+}
+
+.panel {
+  display: none;
+}
+
+.panel.active {
+  display: block;
+  animation: fadeInDown 0.4s ease;
+}
+
+/* ---------- Chat ---------- */
+.chat-window {
+  background: var(--navy);
+  border-radius: var(--radius);
+  padding: 1rem;
+  min-height: 320px;
+  max-height: 50vh;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+}
+
+.chat-msg {
+  margin-bottom: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 10px;
+  max-width: 80%;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.chat-msg.user {
+  background: var(--teal);
+  color: var(--navy-deep);
+  margin-left: auto;
+}
+
+.chat-msg.assistant {
+  background: var(--navy-light);
+}
+
+.chat-msg.system {
+  background: transparent;
+  color: var(--danger);
+  font-style: italic;
+}
+
+.chat-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chat-form input {
+  flex: 1;
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--navy-light);
+  background: var(--navy);
+  color: var(--cream);
+  font-size: 1rem;
+}
+
+.chat-form input:focus {
+  outline: 2px solid var(--teal);
+}
+
+.chat-form button,
+#media-generate-btn,
+#watermark-remove-btn,
+#privacy-wipe-btn {
+  background: var(--teal);
+  color: var(--navy-deep);
+  border: none;
+  padding: 0.7rem 1.4rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.chat-form button:disabled,
+#media-generate-btn:disabled,
+#watermark-remove-btn:disabled,
+#privacy-wipe-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---------- Media ---------- */
+.media-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.media-card {
+  background: var(--navy);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+
+.media-card h3 {
+  margin-top: 0;
+}
+
+.media-card textarea {
+  width: 100%;
+  min-height: 80px;
+  margin: 0.5rem 0;
+  background: var(--navy-light);
+  color: var(--cream);
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.media-card input[type="file"] {
+  display: block;
+  margin: 0.5rem 0;
+  color: var(--cream);
+}
+
+.media-result img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin-top: 0.75rem;
+}
+
+/* ---------- Privacy ---------- */
+.privacy-card {
+  background: var(--navy);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  max-width: 480px;
+}
+
+.privacy-card h3 {
+  margin-top: 0;
+}
+
+#privacy-wipe-result {
+  margin-top: 0.75rem;
+  color: var(--teal-soft);
+}
+
+.error-text {
+  color: var(--danger);
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 600px) {
+  .media-grid {
+    grid-template-columns: 1fr;
+  }
+}

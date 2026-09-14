@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+
+# Ortam değişkenleri - ASLA commit edilmez
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# İşletim sistemi
+.DS_Store
+Thumbs.db
+
+# SOFA gizlilik: hiçbir log/geçici dosya repoya girmez
+*.log
+sofa_temp/
