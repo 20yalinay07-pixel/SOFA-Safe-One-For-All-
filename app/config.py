@@ -49,12 +49,22 @@ class Settings(BaseSettings):
     image_model: str = ""
 
     # --- Music Creator Modülü ---
-    # 1. Öncelik: SunoAPI.org (gerçek müzik üretimi). Anahtar tanımlıysa
-    #    kullanılır: https://sunoapi.org
-    # 2. Yedek: aynı ağ geçitlerinin metinden-sese (TTS) ucu — gerçek müzik
-    #    üretmez, yalnızca bir ses taslağı döner (SunoAPI hiç tanımlı değilse
-    #    veya başarısız olursa devreye girer).
+    # 1. Öncelik: OmniRoute'un kendi native /v1/music/generations ucu -
+    #    gerçek müzik (melodi/ritim/söz), KIE.AI (Suno) veya MiniMax gibi
+    #    OmniRoute'a bağlı bir sağlayıcı üzerinden. OmniRoute görev
+    #    oluşturup beklemeyi (polling) kendi içinde yapar. Format yine
+    #    "provider/model":
+    #      kie/suno-v4.0 veya kie/suno-v3.5   (KIE.AI hesabı gerekir, ücretli)
+    #      minimax/music-3.0-free              (MiniMax hesabı gerekir, ücretsiz model var)
+    #    OmniRoute panelinizde bu sağlayıcılardan birini bağlayıp buraya
+    #    tam model kimliğini yazın; boşsa bu adım tamamen atlanır.
+    music_model: str = ""
+
+    # 2. Yedek: SunoAPI.org (gerçek müzik üretimi, ayrı hesap/anahtar
+    #    gerektirir). Anahtar tanımlıysa kullanılır: https://sunoapi.org
     sunoapi_api_key: str = ""
+    # 3. Son yedek: aynı ağ geçitlerinin metinden-sese (TTS) ucu — gerçek
+    #    müzik üretmez, yalnızca bir ses taslağı döner.
     music_provider_order: str = "omniroute,freellmapi"
     # ÖNEMLİ (OmniRoute kaynak koduyla doğrulandı): "model" alanı burada da
     # ZORUNLU ve "provider/model" formatında olmalı - "auto" bile çalışmaz
