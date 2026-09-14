@@ -42,7 +42,13 @@ async def _generate_with_sunoapi(prompt: str, api_key: str) -> bytes:
     async with httpx.AsyncClient(timeout=30) as client:
         response = await client.post(f"{SUNOAPI_BASE_URL}/api/v1/generate", headers=headers, json=payload)
         response.raise_for_status()
-        task_id = response.json()["data"]["taskId"]
+        body = response.json()
+        data = body.get("data")
+        if not isinstance(data, dict) or "taskId" not in data:
+            # SunoAPI 200 dondurse bile "data": null ile basarisizlik
+            # bildirebiliyor (ör. kredi/limit sorunu) - gercek mesaji gosterelim.
+            raise MusicServiceError(f"SunoAPI.org görev başlatamadı: {body.get('msg') or body}")
+        task_id = data["taskId"]
 
         for _ in range(SUNOAPI_MAX_POLL_ATTEMPTS):
             await asyncio.sleep(SUNOAPI_POLL_INTERVAL_SECONDS)
@@ -53,7 +59,10 @@ async def _generate_with_sunoapi(prompt: str, api_key: str) -> bytes:
                 params={"taskId": task_id},
             )
             status_response.raise_for_status()
-            status_data = status_response.json()["data"]
+            status_body = status_response.json()
+            status_data = status_body.get("data")
+            if not isinstance(status_data, dict):
+                raise MusicServiceError(f"SunoAPI.org durum sorgusu başarısız: {status_body.get('msg') or status_body}")
             status = status_data.get("status")
 
             if status == "SUCCESS":
@@ -129,6 +138,10 @@ async def generate_music(prompt: str) -> bytes:
             safe_log_event(logger, "music_generate_network_error", {"provider": "sunoapi"})
         except MusicServiceError:
             safe_log_event(logger, "music_generate_sunoapi_failed", {})
+        except Exception:
+            # SunoAPI'nin yanıt şekli beklenmedik olsa bile TTS yedeğine
+            # düşmeye devam edelim - tüm istek çökmesin.
+            safe_log_event(logger, "music_generate_sunoapi_unexpected_error", {})
         # SunoAPI başarısız oldu; aşağıdaki TTS taslağına düşülüyor.
 
     return await _generate_with_tts_fallback(prompt)
