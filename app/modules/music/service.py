@@ -90,7 +90,11 @@ async def _generate_with_tts_fallback(prompt: str) -> bytes:
         if gateway.api_key:
             headers["Authorization"] = f"Bearer {gateway.api_key}"
 
-        payload = {"model": settings.music_tts_model, "input": prompt, "voice": settings.music_tts_voice}
+        payload = {"input": prompt}
+        if settings.music_tts_model:
+            payload["model"] = settings.music_tts_model
+        if settings.music_tts_voice:
+            payload["voice"] = settings.music_tts_voice
         url = f"{gateway.base_url.rstrip('/')}/audio/speech"
 
         try:
