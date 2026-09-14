@@ -199,7 +199,16 @@ async def generate_music(prompt: str) -> tuple[bytes, str, str | None, str]:
             attempted_reasons.append(f"SunoAPI.org: {reason}")
             safe_log_event(logger, "music_generate_sunoapi_failed", {})
 
-    audio = await _generate_with_tts_fallback(prompt)
+    try:
+        audio = await _generate_with_tts_fallback(prompt)
+    except MusicServiceError as exc:
+        # Ucuncu (son) katman da basarisiz oldu - kullaniciya sadece TTS'in
+        # hatasini degil, gercek muzik katmanlarinin neden basarisiz
+        # oldugunu da gosterelim, yoksa o bilgi kaybolur.
+        if attempted_reasons:
+            raise MusicServiceError("; ".join(attempted_reasons) + f"; TTS: {exc}") from exc
+        raise
+
     combined_reason = "; ".join(attempted_reasons) if attempted_reasons else None
     return audio, "tts", combined_reason, "mp3"
 
