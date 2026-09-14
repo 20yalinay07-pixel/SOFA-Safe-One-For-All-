@@ -123,28 +123,40 @@ async def _generate_with_tts_fallback(prompt: str) -> bytes:
     raise MusicServiceError("Tüm ses üretim sağlayıcıları başarısız oldu: " + "; ".join(errors))
 
 
-async def generate_music(prompt: str) -> bytes:
-    """SunoAPI.org ile gerçek müzik üretmeyi dener; olmazsa TTS taslağına düşer."""
+async def generate_music(prompt: str) -> tuple[bytes, str, str | None]:
+    """
+    SunoAPI.org ile gerçek müzik üretmeyi dener; olmazsa TTS taslağına düşer.
+    Dönüş: (ses_baytları, kaynak, sunoapi_basarisiz_olduysa_nedeni)
+    "kaynak": "sunoapi" (gerçek müzik) veya "tts" (yer tutucu, şarkı değil).
+    """
     settings = get_settings()
 
     if settings.sunoapi_api_key:
         try:
             audio = await _generate_with_sunoapi(prompt, settings.sunoapi_api_key)
             safe_log_event(logger, "music_generate_success", {"provider": "sunoapi"})
-            return audio
+            return audio, "sunoapi", None
         except httpx.HTTPStatusError as exc:
+            snippet = error_body_snippet(exc.response)
+            reason = f"HTTP {exc.response.status_code}" + (f" - {snippet}" if snippet else "")
             safe_log_event(logger, "music_generate_http_error", {"provider": "sunoapi", "status": exc.response.status_code})
         except httpx.RequestError:
+            reason = "SunoAPI.org'a ağ üzerinden ulaşılamadı."
             safe_log_event(logger, "music_generate_network_error", {"provider": "sunoapi"})
-        except MusicServiceError:
+        except MusicServiceError as exc:
+            reason = str(exc)
             safe_log_event(logger, "music_generate_sunoapi_failed", {})
-        except Exception:
+        except Exception as exc:
             # SunoAPI'nin yanıt şekli beklenmedik olsa bile TTS yedeğine
             # düşmeye devam edelim - tüm istek çökmesin.
+            reason = f"beklenmeyen hata: {exc}"
             safe_log_event(logger, "music_generate_sunoapi_unexpected_error", {})
         # SunoAPI başarısız oldu; aşağıdaki TTS taslağına düşülüyor.
+        audio = await _generate_with_tts_fallback(prompt)
+        return audio, "tts", reason
 
-    return await _generate_with_tts_fallback(prompt)
+    audio = await _generate_with_tts_fallback(prompt)
+    return audio, "tts", None
 
 
 def bytes_to_base64(data: bytes) -> str:
