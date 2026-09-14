@@ -46,9 +46,18 @@ if not exist ".env" (
     echo         .env dosyasindan duzenleyebilirsiniz.
 )
 
-echo.
-echo [SOFA] NOT: Sohbet ve Medya ozelliklerinin calismasi icin
-echo        OmniRoute veya FreeLLMAPI'nin ayrica calisiyor olmasi gerekir.
+REM --- OmniRoute kuruluysa arka planda otomatik baslat ---
+where omniroute >nul 2>&1
+if not errorlevel 1 (
+    echo [SOFA] OmniRoute bulundu, arka planda baslatiliyor...
+    start /b "" omniroute >> omniroute_launch.log 2>&1
+    timeout /t 3 /nobreak >nul
+) else (
+    echo [SOFA] NOT: OmniRoute bu bilgisayarda kurulu degil.
+    echo        Sohbet/Medya/Muzik icin OmniRoute ^(npm install -g omniroute^)
+    echo        veya FreeLLMAPI'nin ayrica calisiyor olmasi gerekir.
+)
+
 echo.
 echo [SOFA] Sunucu baslatiliyor, tarayici birazdan otomatik acilacak...
 echo        Kapatmak icin bu pencereyi kapatmaniz yeterli.

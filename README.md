@@ -96,8 +96,32 @@ SOFA-Safe-One-For-All-/
    installs dependencies, creates `.env`, and adds a **"SOFA AI"** shortcut
    to your Desktop. After that, just double-click the shortcut to launch
    SOFA with no visible console window (it opens your browser automatically).
-   Use **`stop_sofa.bat`** to stop it, or `start_sofa.bat` (visible console)
-   if you need to see error output while troubleshooting.
+   If OmniRoute is installed (`npm install -g omniroute`), the launcher
+   starts it in the background automatically. Use **`stop_sofa.bat`** to
+   stop both, or `start_sofa.bat` (visible console) if you need to see
+   error output while troubleshooting.
+
+## Before you can actually use it
+
+SOFA itself is "bring your own free API key" by design — no key is bundled,
+for privacy and security reasons. **A fresh install has nothing to talk to
+until you do this once:**
+
+1. Install and run **OmniRoute** or **FreeLLMAPI** (step 1 above) — this is
+   a separate local app/process, not something `setup.bat` installs for you.
+2. On that gateway's own dashboard, connect at least one free provider key
+   for **chat** (e.g. Groq, Gemini) and, if you want Image Creation to work,
+   one that does image generation (e.g. Stability). None of this happens
+   inside SOFA — it's configured entirely within OmniRoute's/FreeLLMAPI's
+   own panel.
+3. For real Music Creator output, get a free key from
+   [SunoAPI.org](https://sunoapi.org) and set `SUNOAPI_API_KEY` in `.env`.
+4. **Restart SOFA after editing `.env`** — settings are only read at startup,
+   so a running instance won't pick up a key you just added.
+
+Without step 2, Chat/Image Creation/Music Creator will return a "could not
+reach provider" error instead of a reply — this isn't a bug, it just means
+no gateway/key is reachable yet.
 
 ## Privacy
 

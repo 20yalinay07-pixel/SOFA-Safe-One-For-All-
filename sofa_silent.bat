@@ -21,6 +21,13 @@ if not exist ".env" (
     copy ".env.example" ".env" >nul
 )
 
+REM --- OmniRoute kuruluysa arka planda otomatik baslat ---
+where omniroute >nul 2>&1
+if not errorlevel 1 (
+    start /b "" omniroute >> omniroute_launch.log 2>&1
+    timeout /t 3 /nobreak >nul
+)
+
 start "" http://127.0.0.1:8000
 
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 >> sofa_launch.log 2>&1
