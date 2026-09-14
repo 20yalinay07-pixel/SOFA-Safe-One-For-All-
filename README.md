@@ -95,13 +95,19 @@ SOFA-Safe-One-For-All-/
    ```
    Open `http://127.0.0.1:8000` in your browser.
 
-   **On Windows**, use **`SOFA-Setup.exe`** instead (built from
-   `installer/SOFA_Setup.nsi`; see below) — a real installer wizard that
-   sets up the venv, installs dependencies, creates `.env`, best-effort
-   installs OmniRoute if `npm` is available, and adds a **"SOFA AI"**
-   Desktop + Start Menu shortcut with the SOFA icon — plus an uninstaller.
-   If you'd rather not run an installer, `setup.bat` does the same thing
-   as a plain script instead of a wizard.
+   **On Windows**, use **`SOFA-Setup.exe`** instead (download it from the
+   [Releases](../../releases) page, or build it yourself — see below) —
+   a real installer wizard that sets up the venv, installs dependencies,
+   creates `.env`, best-effort installs OmniRoute if `npm` is available,
+   and adds a **"SOFA AI"** Desktop + Start Menu shortcut with the SOFA
+   icon. If you'd rather not run an installer, `setup.bat` does the same
+   thing as a plain script instead of a wizard.
+
+   **Uninstalling**: the installer also drops an `Uninstall.exe` inside
+   the install folder, so if you decide you don't want it, you can remove
+   everything three ways — double-click `Uninstall.exe` directly, use the
+   "Kaldır" (Uninstall) shortcut it adds to the SOFA Start Menu folder, or
+   remove it like any other app from Windows Settings → Apps.
 
    Either way, launching SOFA afterwards (via the shortcut or `SOFA.vbs`)
    starts it with no visible console window and starts OmniRoute in the
@@ -111,9 +117,10 @@ SOFA-Safe-One-For-All-/
 
 ### Building the Windows installer
 
-`SOFA-Setup.exe` isn't committed to the repo (it's a build artifact); build
-it yourself with [NSIS](https://nsis.sourceforge.io/) (`sudo apt install nsis`
-on Linux/WSL, or the Windows installer from the NSIS site):
+`SOFA-Setup.exe` isn't committed to the repo (it's a build artifact, gitignored) —
+grab a prebuilt copy from [Releases](../../releases), or build it yourself with
+[NSIS](https://nsis.sourceforge.io/) (`sudo apt install nsis` on Linux/WSL, or
+the Windows installer from the NSIS site):
 
 ```bash
 makensis installer/SOFA_Setup.nsi
