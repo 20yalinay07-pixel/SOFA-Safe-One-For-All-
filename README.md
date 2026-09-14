@@ -15,7 +15,11 @@ SOFA doesn't require you to sign up for and manage separate API keys for every f
 
 Since both services use OpenAI's `/chat/completions`, `/images/generations` and `/audio/speech` format, SOFA's backend can talk to either one through a single generic client — and it goes further: each module (Chat, Image Creation, Music Creator) tries an **ordered fallback chain** of providers. If the first one fails (network error, HTTP error, missing key), it automatically retries the next one — no user-visible interruption. The order is configurable per module via `CHAT_PROVIDER_ORDER`, `MEDIA_PROVIDER_ORDER`, and `MUSIC_PROVIDER_ORDER` in `.env` (comma-separated, e.g. `freellmapi,omniroute`).
 
-Music Creator additionally supports **[SunoAPI.org](https://sunoapi.org)** as a first-class provider for real music generation (set `SUNOAPI_API_KEY`) — when configured, it's tried before falling back to the TTS-based placeholder on the gateway chain.
+**Important:** unlike chat completions, OmniRoute's `/images/generations` and `/audio/speech` endpoints require an explicit `model` in `provider/model` format — `"auto"` and omitting it are rejected outright. Set `IMAGE_MODEL` (e.g. `stability-ai/stable-image-core`) and, if you want the TTS fallback to work, `MUSIC_TTS_MODEL` (e.g. `deepgram/aura-asteria-en`) to a real model id from your gateway's own dashboard.
+
+Music Creator's real-music path has two options, tried in order before falling back to the TTS-based placeholder:
+1. **OmniRoute's own `/v1/music/generations` endpoint** (set `MUSIC_MODEL`, e.g. `kie/suno-v4.0` via [KIE.AI](https://kie.ai) or the free `minimax/music-3.0-free`) — OmniRoute submits the job and polls internally, returning the finished track in one response.
+2. **[SunoAPI.org](https://sunoapi.org)** as a standalone provider (set `SUNOAPI_API_KEY`) if you'd rather not go through OmniRoute for this.
 
 ## Folder Structure
 
@@ -42,7 +46,7 @@ SOFA-Safe-One-For-All-/
 │       │   └── router.py
 │       ├── music/                # Music Creator module
 │       │   ├── schemas.py
-│       │   ├── service.py       # SunoAPI.org (real music) + TTS fallback chain
+│       │   ├── service.py       # OmniRoute native music + SunoAPI.org (real music) + TTS fallback chain
 │       │   └── router.py
 │       └── privacy/              # Secure local tools module
 │           ├── schemas.py
@@ -141,11 +145,13 @@ until you do this once:**
    OmniRoute for you if `npm` is already on your system.
 2. On that gateway's own dashboard, connect at least one free provider key
    for **chat** (e.g. Groq, Gemini) and, if you want Image Creation to work,
-   one that does image generation (e.g. Stability). None of this happens
-   inside SOFA — it's configured entirely within OmniRoute's/FreeLLMAPI's
-   own panel.
-3. For real Music Creator output, get a free key from
-   [SunoAPI.org](https://sunoapi.org) and set `SUNOAPI_API_KEY` in `.env`.
+   one that does image generation (e.g. Stability — then set `IMAGE_MODEL`,
+   see above). None of this happens inside SOFA — it's configured entirely
+   within OmniRoute's/FreeLLMAPI's own panel.
+3. For real Music Creator output: connect **KIE.AI** or **MiniMax** in
+   OmniRoute's panel and set `MUSIC_MODEL` (recommended — no separate
+   account needed beyond what's already in OmniRoute), or get a free key
+   from [SunoAPI.org](https://sunoapi.org) and set `SUNOAPI_API_KEY` instead.
 4. **Restart SOFA after editing `.env`** — settings are only read at startup,
    so a running instance won't pick up a key you just added.
 
