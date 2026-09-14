@@ -30,7 +30,7 @@ class MediaServiceError(Exception):
 
 
 async def _generate_with_gateway(
-    base_url: str, api_key: str, prompt: str, negative_prompt: str, width: int, height: int
+    base_url: str, api_key: str, model: str, prompt: str, negative_prompt: str, width: int, height: int
 ) -> bytes:
     headers = {"Content-Type": "application/json"}
     if api_key:
@@ -38,10 +38,16 @@ async def _generate_with_gateway(
 
     payload = {
         "prompt": prompt,
-        "negative_prompt": negative_prompt or "",
         "size": f"{width}x{height}",
         "response_format": "b64_json",
     }
+    if model:
+        payload["model"] = model
+    # "negative_prompt" OpenAI'nin resmi şemasında yok; bazı gateway'ler
+    # bilinmeyen alanları görünce isteği reddedebiliyor, o yüzden yalnızca
+    # kullanıcı gerçekten bir şey yazdıysa gönderilir.
+    if negative_prompt:
+        payload["negative_prompt"] = negative_prompt
     url = f"{base_url.rstrip('/')}/images/generations"
 
     async with httpx.AsyncClient(timeout=90) as client:
@@ -68,7 +74,7 @@ async def generate_image(prompt: str, negative_prompt: str | None, width: int, h
 
         try:
             image_bytes = await _generate_with_gateway(
-                gateway.base_url, gateway.api_key, prompt, negative_prompt, width, height
+                gateway.base_url, gateway.api_key, settings.image_model, prompt, negative_prompt, width, height
             )
             safe_log_event(logger, "image_generate_success", {"provider": provider})
             return image_bytes
