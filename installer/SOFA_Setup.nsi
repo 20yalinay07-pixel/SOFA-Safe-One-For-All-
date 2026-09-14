@@ -112,8 +112,9 @@ Section "Uninstall"
     DetailPrint "SOFA/OmniRoute calisiyorsa durduruluyor..."
     FileOpen $0 "$TEMP\sofa_uninstall_stop.bat" w
     FileWrite $0 "@echo off$\r$\n"
-    FileWrite $0 'for /f "tokens=5" %%p in ($\'netstat -ano ^| findstr :8000 ^| findstr LISTENING$\') do taskkill /F /PID %%p >nul 2>&1$\r$\n'
-    FileWrite $0 'for /f "tokens=5" %%p in ($\'netstat -ano ^| findstr :20128 ^| findstr LISTENING$\') do taskkill /F /PID %%p >nul 2>&1$\r$\n'
+    FileWrite $0 'powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like $\'*omniroute*$\' -and $_.ProcessId -ne $PID } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }"$\r$\n'
+    FileWrite $0 'for /f "tokens=5" %%p in ($\'netstat -ano ^| findstr :8000 ^| findstr LISTENING$\') do taskkill /F /T /PID %%p >nul 2>&1$\r$\n'
+    FileWrite $0 'for /f "tokens=5" %%p in ($\'netstat -ano ^| findstr :20128 ^| findstr LISTENING$\') do taskkill /F /T /PID %%p >nul 2>&1$\r$\n'
     FileClose $0
     nsExec::ExecToLog '"$TEMP\sofa_uninstall_stop.bat"'
     Pop $0
