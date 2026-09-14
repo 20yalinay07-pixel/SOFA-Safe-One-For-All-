@@ -33,6 +33,8 @@ async def generate_image_endpoint(payload: ImageGenerateRequest) -> ImageGenerat
         )
     except MediaServiceError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except Exception as exc:  # Beklenmeyen hatalar için son güvenlik ağı
+        raise HTTPException(status_code=500, detail=f"Beklenmeyen bir hata oluştu: {exc}") from exc
 
 
 @router.post("/watermark/remove", response_model=WatermarkRemoveResponse)
@@ -51,3 +53,7 @@ async def remove_watermark_endpoint(file: UploadFile = File(...)) -> WatermarkRe
         )
     except MediaServiceError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except HTTPException:
+        raise
+    except Exception as exc:  # Beklenmeyen hatalar için son güvenlik ağı
+        raise HTTPException(status_code=500, detail=f"Beklenmeyen bir hata oluştu: {exc}") from exc

@@ -19,4 +19,4 @@ async def chat_endpoint(payload: ChatRequest) -> ChatResponse:
     except ChatServiceError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
     except Exception as exc:  # Beklenmeyen hatalar için son güvenlik ağı
-        raise HTTPException(status_code=500, detail="Sohbet sırasında beklenmeyen bir hata oluştu.") from exc
+        raise HTTPException(status_code=500, detail=f"Beklenmeyen bir hata oluştu: {exc}") from exc

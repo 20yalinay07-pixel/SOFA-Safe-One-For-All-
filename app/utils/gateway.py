@@ -42,3 +42,18 @@ def is_gateway_usable(gateway: GatewayConfig) -> bool:
     if gateway.name == "freellmapi" and not gateway.api_key:
         return False
     return True
+
+
+def error_body_snippet(response, limit: int = 200) -> str:
+    """
+    Bir HTTP hata yanıtının gövdesinden kısa, okunabilir bir özet çıkarır
+    (ör. "omniroute: HTTP 400" yerine "omniroute: HTTP 400 - {"error":
+    "invalid model"}"). Gövde okunamazsa veya boşsa sessizce boş döner.
+    """
+    try:
+        text = response.text.strip()
+    except Exception:
+        return ""
+    if not text:
+        return ""
+    return text[:limit] + ("…" if len(text) > limit else "")

@@ -22,3 +22,5 @@ async def generate_music_endpoint(payload: MusicGenerateRequest) -> MusicGenerat
         )
     except MusicServiceError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except Exception as exc:  # Beklenmeyen hatalar için son güvenlik ağı
+        raise HTTPException(status_code=500, detail=f"Beklenmeyen bir hata oluştu: {exc}") from exc

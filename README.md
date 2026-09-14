@@ -153,6 +153,21 @@ Without step 2, Chat/Image Creation/Music Creator will return a "could not
 reach provider" error instead of a reply — this isn't a bug, it just means
 no gateway/key is reachable yet.
 
+## Troubleshooting
+
+- **Error messages include the real cause.** A fallback-chain failure like
+  `omniroute: HTTP 400 - {"error": "..."}` includes a snippet of what the
+  gateway actually said — that detail (not just the status code) tells you
+  what to fix (bad model name, missing parameter, disabled provider, etc.).
+- **Chat replies look like placeholder/joke text** (e.g. unrelated or
+  nonsensical output) instead of a real answer: this usually means
+  `CHAT_MODEL=auto` routed to a demo/test model on your gateway rather than
+  a real provider. Set `CHAT_MODEL` in `.env` to a specific model ID from
+  your OmniRoute/FreeLLMAPI dashboard instead of `auto`.
+- **Using the hidden launcher (`SOFA.vbs`) and something fails silently?**
+  Check `sofa_launch.log` in the install folder — server output (including
+  errors) is redirected there since there's no visible console.
+
 ## Privacy
 
 - With `SOFA_NO_LOG=true` (default), no chat/media content is ever written to disk or the console.
