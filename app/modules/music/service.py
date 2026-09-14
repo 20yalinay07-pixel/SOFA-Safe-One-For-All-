@@ -44,12 +44,13 @@ async def generate_music(prompt: str) -> bytes:
     TASLAK: metinden ses üretir (gerçek müzik üretimi değil, TTS tabanlı
     bir yer tutucudur). Ağ geçidinin `/audio/speech` ucunu kullanır.
     """
+    settings = get_settings()
     base_url, api_key = _resolve_gateway()
     headers = {"Content-Type": "application/json"}
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
 
-    payload = {"model": "tts-1", "input": prompt, "voice": "alloy"}
+    payload = {"model": settings.music_tts_model, "input": prompt, "voice": settings.music_tts_voice}
     url = f"{base_url.rstrip('/')}/audio/speech"
 
     try:

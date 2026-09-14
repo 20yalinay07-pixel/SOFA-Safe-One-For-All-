@@ -32,6 +32,13 @@ class Settings(BaseSettings):
     # --- Media Modülü ---
     media_provider: str = "omniroute"  # aynı gateway'in /v1/images/generations ucu kullanılır
 
+    # --- Music Creator Modülü ---
+    # TTS tabanlı taslak için kullanılacak model/ses adı. OmniRoute'ta belirli
+    # bir sağlayıcıyı (ör. Deepgram) hedeflemek istersen, panelindeki model
+    # listesinden gördüğün tam model kimliğini buraya yaz (ör. "deepgram/aura-asteria-en").
+    music_tts_model: str = "tts-1"
+    music_tts_voice: str = "alloy"
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 
