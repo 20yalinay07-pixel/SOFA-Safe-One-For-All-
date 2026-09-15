@@ -2,13 +2,20 @@
 Music Creator Module - Servis Katmanı
 
 Öncelik sırası:
-  1. OmniRoute'un kendi `/v1/music/generations` ucu (MUSIC_MODEL ayarlıysa) -
-     gerçek müzik üretimi. OmniRoute, KIE.AI (Suno) veya MiniMax gibi
-     sağlayıcılara görevi kendi içinde gönderip bekler (polling) ve tek
-     istekte hazır sesi döner - bizim ayrıca görev takip etmemiz gerekmez.
-  2. SunoAPI.org (https://sunoapi.org) - gerçek müzik üretimi, ayrı bir
-     hesap/anahtar gerektirir (SUNOAPI_API_KEY). Asenkron çalışır: bir görev
-     (task) başlatılır, sonucu hazır olana kadar biz periyodik sorgularız.
+  1. SunoAPI.org (https://sunoapi.org) - gerçek müzik üretimi, SÖZLÜ (melodi +
+     ritim + kafiyeli söz hepsi var, "instrumental" bilerek false gönderiliyor).
+     Ayrı bir hesap/anahtar gerektirir (SUNOAPI_API_KEY). Asenkron çalışır: bir
+     görev (task) başlatılır, sonucu hazır olana kadar biz periyodik sorgularız.
+  2. OmniRoute'un kendi `/v1/music/generations` ucu (MUSIC_MODEL ayarlıysa) -
+     KIE.AI (Suno) veya MiniMax gibi sağlayıcılara görevi kendi içinde
+     gönderip bekler (polling) ve tek istekte hazır sesi döner. ÖNEMLİ
+     SINIRLAMA (OmniRoute kaynak koduyla doğrulandı - bkz.
+     open-sse/handlers/musicGeneration.ts): OmniRoute'un KIE entegrasyonu
+     "instrumental: true"yi SABİT KODLUYOR, biz ne gönderirsek gönderelim
+     değişmiyor - yani bu yoldan ASLA sözlü/kafiyeli şarkı çıkmaz, sadece
+     enstrümantal (melodi+ritim var, söz yok). Bu OmniRoute'un kendi
+     kısıtlaması, SOFA'nın kodundan bağımsız - bu yüzden SunoAPI.org önce
+     denenir.
   3. Yedek: MUSIC_PROVIDER_ORDER'daki ağ geçitlerinin metinden-sese (TTS,
      `/audio/speech`) ucu. Bu gerçek bir müzik üretmez, yalnızca bir konuşma
      sesi taslağı döner; yukarıdakilerin ikisi de tanımlı değilse veya
@@ -171,23 +178,14 @@ def _describe_exception(exc: Exception) -> str:
 
 async def generate_music(prompt: str) -> tuple[bytes, str, str | None, str]:
     """
-    Gerçek müzik üretmeyi dener (önce OmniRoute native, sonra SunoAPI.org);
-    ikisi de tanımlı değilse veya başarısız olursa TTS taslağına düşer.
+    Gerçek müzik üretmeyi dener (önce SunoAPI.org - sözlü/kafiyeli, sonra
+    OmniRoute native - yalnızca enstrümantal); ikisi de tanımlı değilse veya
+    başarısız olursa TTS taslağına düşer.
     Dönüş: (ses_baytları, kaynak, başarısız_denemelerin_nedeni, ses_formatı)
-    "kaynak": "omniroute-music" veya "sunoapi" (gerçek müzik) ya da "tts" (yer tutucu, şarkı değil).
+    "kaynak": "sunoapi" veya "omniroute-music" (gerçek müzik) ya da "tts" (yer tutucu, şarkı değil).
     """
     settings = get_settings()
     attempted_reasons: list[str] = []
-
-    if settings.music_model:
-        try:
-            audio, audio_format = await _generate_with_omniroute_music(prompt)
-            safe_log_event(logger, "music_generate_success", {"provider": "omniroute-music"})
-            return audio, "omniroute-music", None, audio_format
-        except Exception as exc:
-            reason = _describe_exception(exc)
-            attempted_reasons.append(f"OmniRoute müzik: {reason}")
-            safe_log_event(logger, "music_generate_omniroute_music_failed", {})
 
     if settings.sunoapi_api_key:
         try:
@@ -198,6 +196,16 @@ async def generate_music(prompt: str) -> tuple[bytes, str, str | None, str]:
             reason = _describe_exception(exc)
             attempted_reasons.append(f"SunoAPI.org: {reason}")
             safe_log_event(logger, "music_generate_sunoapi_failed", {})
+
+    if settings.music_model:
+        try:
+            audio, audio_format = await _generate_with_omniroute_music(prompt)
+            safe_log_event(logger, "music_generate_success", {"provider": "omniroute-music"})
+            return audio, "omniroute-music", None, audio_format
+        except Exception as exc:
+            reason = _describe_exception(exc)
+            attempted_reasons.append(f"OmniRoute müzik: {reason}")
+            safe_log_event(logger, "music_generate_omniroute_music_failed", {})
 
     try:
         audio = await _generate_with_tts_fallback(prompt)
