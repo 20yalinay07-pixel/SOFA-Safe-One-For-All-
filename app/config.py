@@ -40,29 +40,39 @@ class Settings(BaseSettings):
     media_provider_order: str = "omniroute,freellmapi"
     # ÖNEMLİ (OmniRoute kaynak koduyla doğrulandı): "model" alanı ZORUNLU
     # ve "provider/model" formatında olmalı - "auto" veya boş çalışmaz,
-    # açıkça reddedilir. Ör. Stability AI bağlıysa:
-    #   stability-ai/stable-image-core  (hızlı/ucuz)
-    #   stability-ai/stable-image-ultra
-    #   stability-ai/sd3.5-large
+    # açıkça reddedilir.
+    #   pollinations/flux              (ÖNERİLEN - tamamen ücretsiz, OmniRoute
+    #                                   panelinde hiçbir hesap/anahtar bağlamaya
+    #                                   gerek yok, anonim çalışır - kaynak kodda
+    #                                   doğrulandı)
+    #   pollinations/klein, pollinations/zimage, pollinations/qwen-image  (diğer ücretsiz seçenekler)
+    #   stability-ai/stable-image-core (Stability AI hesabınızda ücretli kredi gerekir)
     # OmniRoute panelinizdeki "Resim" sekmesinden bağlı sağlayıcınızın tam
-    # kimliğini görüp buraya yazın.
+    # kimliğini görüp buraya yazabilirsiniz.
     image_model: str = ""
 
     # --- Music Creator Modülü ---
-    # 1. Öncelik: OmniRoute'un kendi native /v1/music/generations ucu -
-    #    gerçek müzik (melodi/ritim/söz), KIE.AI (Suno) veya MiniMax gibi
-    #    OmniRoute'a bağlı bir sağlayıcı üzerinden. OmniRoute görev
-    #    oluşturup beklemeyi (polling) kendi içinde yapar. Format yine
+    # 1. Öncelik: SunoAPI.org (gerçek müzik üretimi, SÖZLÜ - melodi/ritim/söz
+    #    hepsi var, "instrumental" bilerek false gönderiliyor). Ayrı bir
+    #    hesap/anahtar gerektirir. Anahtar tanımlıysa kullanılır:
+    #    https://sunoapi.org
+    sunoapi_api_key: str = ""
+
+    # 2. Yedek: OmniRoute'un kendi native /v1/music/generations ucu - KIE.AI
+    #    (Suno) veya MiniMax gibi OmniRoute'a bağlı bir sağlayıcı üzerinden.
+    #    ÖNEMLİ SINIRLAMA (OmniRoute kaynak koduyla doğrulandı - bkz.
+    #    open-sse/handlers/musicGeneration.ts): OmniRoute'un KIE entegrasyonu
+    #    "instrumental: true"yi SABİT KODLUYOR, biz ne gönderirsek gönderelim
+    #    değişmiyor - yani bu yoldan ASLA sözlü/söylenen şarkı çıkmaz, sadece
+    #    enstrümantal (melodi+ritim var, söz yok). Bu OmniRoute'un kendi
+    #    kısıtlaması, SOFA'nın kodundan bağımsız. Sözlü/kafiyeli şarkı
+    #    istiyorsanız SunoAPI.org (yukarıdaki) kullanın. Format yine
     #    "provider/model":
-    #      kie/suno-v4.0 veya kie/suno-v3.5   (KIE.AI hesabı gerekir, ücretli)
+    #      kie/suno-v4.0 veya kie/suno-v3.5   (KIE.AI hesabı gerekir, ücretli, enstrümantal)
     #      minimax/music-3.0-free              (MiniMax hesabı gerekir, ücretsiz model var)
     #    OmniRoute panelinizde bu sağlayıcılardan birini bağlayıp buraya
     #    tam model kimliğini yazın; boşsa bu adım tamamen atlanır.
     music_model: str = ""
-
-    # 2. Yedek: SunoAPI.org (gerçek müzik üretimi, ayrı hesap/anahtar
-    #    gerektirir). Anahtar tanımlıysa kullanılır: https://sunoapi.org
-    sunoapi_api_key: str = ""
     # 3. Son yedek: aynı ağ geçitlerinin metinden-sese (TTS) ucu — gerçek
     #    müzik üretmez, yalnızca bir ses taslağı döner.
     music_provider_order: str = "omniroute,freellmapi"
