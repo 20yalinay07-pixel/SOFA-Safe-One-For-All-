@@ -7,6 +7,7 @@ FastAPI tabanlı, tamamen yerel-öncelikli (local-first) çok modüllü asistan.
 veya
     python -m app.main
 """
+import os
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -51,6 +52,31 @@ async def index(request: Request) -> HTMLResponse:
 async def health_check() -> dict:
     """Basit sağlık kontrolü; hassas hiçbir bilgi döndürmez."""
     return {"status": "ok", "app": settings.app_name}
+
+
+@app.get("/api/debug/config")
+async def debug_config() -> dict:
+    """
+    GEÇİCİ TEŞHİS UCU: SOFA'nın .env'den GERÇEKTE ne okuduğunu gösterir.
+    Anahtar değerleri asla döndürülmez, sadece dolu/boş olduğu (bool) ve
+    hassas olmayan model/sıra ayarlarının ham metni döner - bu sorun
+    çözüldükten sonra bu uç kaldırılmalıdır.
+    """
+    env_path = Path(".env").resolve()
+    return {
+        "process_cwd": os.getcwd(),
+        "env_file_resolved_path": str(env_path),
+        "env_file_exists_at_that_path": env_path.exists(),
+        "omniroute_base_url": settings.omniroute_base_url,
+        "omniroute_api_key_set": bool(settings.omniroute_api_key),
+        "freellmapi_api_key_set": bool(settings.freellmapi_api_key),
+        "media_provider_order": settings.media_provider_order,
+        "image_model": settings.image_model,
+        "music_provider_order": settings.music_provider_order,
+        "music_model": settings.music_model,
+        "sunoapi_api_key_set": bool(settings.sunoapi_api_key),
+        "music_tts_model": settings.music_tts_model,
+    }
 
 
 if __name__ == "__main__":
